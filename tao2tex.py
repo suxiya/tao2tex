@@ -139,6 +139,7 @@ def child_processor(child: PageElement) -> list[str]:
     elif child.name == "p":
         return [*soup_processor(child), "\n"]
     else:
+        # TODO: ordered and unordered lists?
         return [child.get_text()]
 
 
