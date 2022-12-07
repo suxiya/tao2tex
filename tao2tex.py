@@ -9,7 +9,13 @@ At the moment, this is hard-coded to work only for Tao's blogposts.
 """
 
 
-from bs4 import BeautifulSoup, FeatureNotFound, NavigableString, SoupStrainer
+from bs4 import (
+    BeautifulSoup,
+    FeatureNotFound,
+    NavigableString,
+    PageElement,
+    SoupStrainer,
+)
 
 # url = "https://terrytao.wordpress.com/"
 # url = "https://www.baidu.cn/"
@@ -31,7 +37,7 @@ default_html = "test1.html"
 
 def soup_maker(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
     """Creates a new soup from the raw html with an optional SoupStrainer."""
-    with open(user_html, "r") as html_doc:
+    with open(user_html, "r", encoding="UTF-8") as html_doc:
         try:
             soup = BeautifulSoup(html_doc.read(), "lxml", parse_only=strainer)
         except FeatureNotFound:
@@ -89,48 +95,58 @@ def inline_math_formatter(text: str, dollar: str = "") -> str:
 
 
 def section_formatter(text: str) -> str:
-    """formats a section header using the \section{} LaTeX macro"""
+    """formats a section header using the section LaTeX macro"""
     # TODO: use regex to remove the fancy formatting and number
+    # TODO: check if there are tags in test2.html
     return r"\section{" + text + "}"
 
 
 def theorem_formatter(soup: BeautifulSoup) -> str:
     """formats a blockquote into a theorem/conjecture/etc."""
     # TODO: use regex to figure out the theorem type.
-    return "XXXXXXXX THEOREM XXXXXXXX\n" + "".join(soup_processor(soup.extract()))
+    return r"XXXXXXXX THEOREM XXXXXXXX\n" + "".join(soup_processor(soup))
+
+
+def child_processor(child: PageElement) -> list[str]:
+    """Turns a child element into a list of legal LaTeX strings."""
+    if isinstance(child, NavigableString):
+        return [child.get_text()]
+    elif child.name == "em":
+        return [em_formatter(child.get_text())]
+    elif (
+        child.name == "p" and "align" in child.attrs.keys() and len(child.contents) == 1
+    ):
+        if child.contents[0].name == "img" and "alt" in child.attrs.keys():
+            return [display_math_formatter(child.contents[0]["alt"])]
+        elif child.contents[0].name == "b":
+            return [section_formatter(child.contents[0].get_text())]
+        else:
+            return ["TODO", child.get_text()]
+    elif child.name == "img" and "alt" in child.attrs.keys():
+        return [inline_math_formatter(child["alt"])]
+    elif child.name == "img":
+        # TODO: save images and appropriately format
+        return ["\n unknown image found \n"]
+    elif child.name == "a" and "href" in child.attrs.keys():
+        # TODO: turn things like <a href="#approx">(19)</a> into labels
+        return [url_formatter(child["href"], child.get_text())]
+    elif child.name == "a" and "name" in child.attrs.keys():
+        # TODO: save the name as a tag
+        return ["TODO", child.get_text()]
+    elif child.name == "blockquote":
+        # TODO: Theorem detect with regex and implement
+        return ["TODO", child.get_text()]
+    elif child.name == "p":
+        return [*soup_processor(child), "\n"]
+    else:
+        return [child.get_text()]
 
 
 def soup_processor(soup: BeautifulSoup) -> list[str]:
     """converts a BeautifulSoup into a list of legal LaTeX strings"""
     out = []
-    for child in soup:
-        if isinstance(child, NavigableString):
-            out.append(child.get_text())
-        # if isinstance(child, str):
-        #     out.append(child)
-        elif child.name == "em":
-            out.append(em_formatter(child.get_text()))
-        elif (
-            child.name == "p"
-            and "align" in child.attrs.keys()
-            and len(child.contents) == 1
-        ):
-            if child.contents[0].name == "img" and "alt" in child.attrs.keys():
-                out.append(display_math_formatter(child.contents[0]["alt"]))
-            elif child.contents[0].name == "b":
-                out.append(section_formatter(child.contents[0].get_text()))
-        elif child.name == "img" and "alt" in child.attrs.keys():
-            out.append(inline_math_formatter(child["alt"]))
-        elif child.name == "img":
-            # TODO: save images and appropriately format
-            out.append("\n unknown image found \n")
-        elif child.name == "a":
-            out.append(url_formatter(child["href"], child.get_text()))
-        elif child.name == "blockquote":
-            out.append(theorem_formatter(child))
-        elif child.name == "p":
-            out.extend(soup_processor(child))
-            out.append("\n")
+    for child in soup.children:
+        out.extend(child_processor(child))
 
     return out
 
@@ -141,7 +157,7 @@ def main():
     soup = soup_maker(default_html, strainer)
 
     title = soup.h1.get_text()
-    metadata = soup_processor(soup.find_all("p", "post-metadata")[0])
+    metadata = soup_processor(soup.find("p", "post-metadata"))
 
     print(title)
     print("".join(metadata))
