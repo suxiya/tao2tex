@@ -30,15 +30,6 @@ from bs4 import (
 # print(r.text)
 # soup = BeautifulSoup(response)
 
-# demo_html = """<div class="post-content">
-
-
-# <p>
-#  <a href="https://www.ias.edu/scholars/rachel-greenfeld">Rachel Greenfeld</a> and I have just uploaded to the arXiv our paper “<a href="https://arxiv.org/abs/2211.15847">A counterexample to the periodic tiling conjecture</a>“. This is the full version of the result I announced on this blog <a href="https://terrytao.wordpress.com/2022/09/19/a-counterexample-to-the-periodic-tiling-conjecture/">a few months ago</a>, in which we disprove the <em>periodic tiling conjecture</em> of <a href="https://mathscinet.ams.org/mathscinet-getitem?mr=857454">Grünbaum-Shephard</a> and <a href="https://mathscinet.ams.org/mathscinet-getitem?mr=1369421">Lagarias-Wang</a>. The paper took a little longer than expected to finish, due to a technical issue that we did not realize at the time of the announcement that required a workaround.
-# </p><p>
-# In more detail: the original strategy, as described in the announcement, was to build a “tiling language” that was capable of encoding a certain “<img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex">-adic Sudoku puzzle”, and then show that the latter type of puzzle had only non-periodic solutions if <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex"> was a sufficiently large prime. As it turns out, the second half of this strategy worked out, but there was an issue in the first part: our tiling language was able (using <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(1).php" srcset="https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{2}" class="latex">-group-valued functions) to encode arbitrary boolean relationships between boolean functions, and was also able (using <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(2).php" srcset="https://s0.wp.com/latex.php?latex=%7B%7B%5Cbf+Z%7D%2Fp%7B%5Cbf+Z%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B%7B%5Cbf+Z%7D%2Fp%7B%5Cbf+Z%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{{\bf Z}/p{\bf Z}}" class="latex">-valued functions) to encode “clock” functions such as <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(3).php" srcset="https://s0.wp.com/latex.php?latex=%7Bn+%5Cmapsto+n+%5Chbox%7B+mod+%7D+p%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bn+%5Cmapsto+n+%5Chbox%7B+mod+%7D+p%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{n \mapsto n \hbox{ mod } p}" class="latex"> that were part of our <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex">-adic Sudoku puzzle, but we were not able to make these two types of functions “talk” to each other in the way that was needed to encode the <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex">-adic Sudoku puzzle (the basic problem being that if <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(4).php" srcset="https://s0.wp.com/latex.php?latex=%7BH%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7BH%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{H}" class="latex"> is a finite abelian <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(1).php" srcset="https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{2}" class="latex">-group then there are no non-trivial subgroups of <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(5).php" srcset="https://s0.wp.com/latex.php?latex=%7BH+%5Ctimes+%7B%5Cbf+Z%7D%2Fp%7B%5Cbf+Z%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7BH+%5Ctimes+%7B%5Cbf+Z%7D%2Fp%7B%5Cbf+Z%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{H \times {\bf Z}/p{\bf Z}}" class="latex"> that are not contained in <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(4).php" srcset="https://s0.wp.com/latex.php?latex=%7BH%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7BH%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{H}" class="latex"> or trivial in the <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(2).php" srcset="https://s0.wp.com/latex.php?latex=%7B%7B%5Cbf+Z%7D%2Fp%7B%5Cbf+Z%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B%7B%5Cbf+Z%7D%2Fp%7B%5Cbf+Z%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{{\bf Z}/p{\bf Z}}" class="latex"> direction). As a consequence, we had to replace our “<img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex">-adic Sudoku puzzle” by a “<img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(1).php" srcset="https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{2}" class="latex">-adic Sudoku puzzle” which basically amounts to replacing the prime <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex"> by a sufficiently large power of <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(1).php" srcset="https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{2}" class="latex"> (we believe <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(6).php" srcset="https://s0.wp.com/latex.php?latex=%7B2%5E%7B10%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B2%5E%7B10%7D%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{2^{10}}" class="latex"> will suffice). This solved the encoding issue, but the analysis of the <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex(1).php" srcset="https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B2%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{2}" class="latex">-adic Sudoku puzzles was a little bit more complicated than the <img src="./A counterexample to the periodic tiling conjecture _ What&#39;s new_files/latex.php" srcset="https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bp%7D&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x" alt="{p}" class="latex">-adic case, for the following reason. The following is a nice exercise in analysis:
-# </p>"""
-
 DEFAULT_HTML = "test2.html"
 
 
@@ -58,13 +49,13 @@ def soup_maker(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
 def ahref_formatter(href: str, text: str = "") -> str:
     """turns a href with a text into the corresponding LaTeX code.
     If no text is given, then the href is used instead."""
-    url_matcher = re.compile(r"http.*")
-    ref_matcher = re.compile(r"[0-9]+")
-    eqref_matcher = re.compile(r"\([0-9]+\)")
+    url_matcher = re.compile(r"(http|www).*")  # http or www, followed by anything
+    ref_matcher = re.compile(r"[0-9]+")  # at least one number
+    eqref_matcher = re.compile(r"\([0-9]+\)")  # at least one number in round brackets
     if url_matcher.match(href):
         if text == "":
             text = href
-        return r"\href{" + href + r"}{" + text + "}"
+        return r"\href{" + href + "}{" + text + "}"
     elif href[0] == "#" and ref_matcher.match(text):
         return r"\ref{" + href[1:] + "}"
     elif href[0] == "#" and eqref_matcher.match(text):
@@ -74,35 +65,41 @@ def ahref_formatter(href: str, text: str = "") -> str:
 
 
 def em_wrapper(soup: BeautifulSoup) -> list[str]:
-    """formats a string inside an <em> tag with the emph LaTeX macro."""
+    """formats a soup inside an <em> tag with the emph LaTeX macro."""
     return [r"\emph{"] + soup_processor(soup) + ["}"]
 
 
-def math_formatter(text: str) -> str:
-    """turns the given img tag that was already checked to encode math, into LaTeX code"""
-    return text
+def math_formatter(text: str, left_delim: str = r"\(", right_delim: str = r"\)") -> str:
+    """adds math delimiters, hopefully around LaTeX formatted math text"""
+    return left_delim + text + right_delim
 
 
-def display_math_formatter(text: str, dollar: str = "") -> str:
-    """adds display math delimitters around math_formatter"""
-    if dollar:
-        left_delim = "$$"
-        right_delim = "$$"
-    else:
-        left_delim = r"\["
-        right_delim = r"\]"
-    return left_delim + math_formatter(text) + right_delim
+def display_math_formatter(
+    text: str, left_delim: str = r"\[", right_delim: str = r"\]"
+) -> str:
+    """adds display math delimiters"""
+    return math_formatter(text, left_delim, right_delim)
 
 
-def inline_math_formatter(text: str, dollar: str = "") -> str:
-    """adds inline math delimitters around math_formatter"""
-    if dollar:
-        left_delim = "$"
-        right_delim = "$"
-    else:
-        left_delim = r"\("
-        right_delim = r"\)"
-    return left_delim + math_formatter(text) + right_delim
+def labelled_display_math_formatter(
+    text: str, label: str, env_type: str = "align"
+) -> str:
+    # the equation number was hard-coded into the math by LaTeX2WP. So we need to remove it
+    extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
+    if number_match := extra_eqno_matcher.match(text):
+        text = number_match.group(1)
+    return (
+        r"\begin{"
+        + env_type
+        + "}"
+        + label_formatter(label)
+        + "\n"
+        + text
+        + "\n"
+        + r"\end{"
+        + env_type
+        + "}"
+    )
 
 
 def section_formatter(text: str) -> str:
@@ -135,46 +132,76 @@ def environment_wrapper(
 
 
 def theorem_wrapper(unprocessed_thm_title: str, soup: BeautifulSoup) -> list[str]:
-    """formats a blockquote into a theorem/conjecture/etc."""
+    """formats a blockquote into a theorem/conjecture/etc environment"""
     theoremtype = "unknown"
     title_matcher = re.compile(r"([a-zA-z]*) ")  # first word in unprocessed_thm_title
     if title_match := re.search(title_matcher, unprocessed_thm_title):
         match title := title_match.group(1).lower():
-            case "exercise" | "theorem" | "corollary" | "example" | "remark" | "conjecture" | "proposition" | "lemma" | "definition" | "note":
+            case (
+                "exercise"
+                | "theorem"
+                | "corollary"
+                | "example"
+                | "remark"
+                | "conjecture"
+                | "proposition"
+                | "lemma"
+                | "definition"
+                | "note"
+            ):
                 theoremtype = title
 
     options = ""
     options_matcher = re.compile(
         r"\((.*)?\)"
-    )  # first pair of brackets in unprocessed_thm_title
+    )  # look for a pair of brackets in unprocessed_thm_title
     if options_match := re.search(options_matcher, unprocessed_thm_title):
         options = "[" + options_match.group(1) + "]"
     return environment_wrapper(theoremtype, soup, options)
 
 
-def tag_formatter(tag: str) -> str:
-    "formats a tag as a label"
+def label_formatter(tag: str) -> str:
+    "formats a label as a LaTeX command"
     return r"\label{" + tag + "}"
 
 
+def string_formatter(text: str) -> str:
+    """Escapes special LaTeX characters."""
+    latex_escaper = re.compile(r"[\\_^%&*{}@]")
+    latex_subst = "\\\0"
+    text = re.sub(latex_escaper, latex_subst, text)
+    # pipes need special escaping
+    pipe_escaper = re.compile(r"\|")
+    pipe_subst = r"\\textbar"
+    text = re.sub(pipe_escaper, pipe_subst, text)
+    return text
+
+
 def child_processor(child: PageElement) -> list[str]:
-    """Turns a child element into a list of legal LaTeX strings."""
+    """Turns a child element into a list of legal LaTeX strings.
+    We return a list instead of a single string to enable recursion."""
     if isinstance(child, NavigableString):
-        # TODO: check for and escape special chars here
-        return [child.get_text()]
+        return [string_formatter(child.get_text())]
     elif child.name == "em":
         return em_wrapper(child)
-    elif (
-        child.name == "p" and "align" in child.attrs.keys() and len(child.contents) == 1
-    ):
+    elif child.name == "p" and "align" in child.attrs.keys():
         if child.contents[0].name == "img" and "alt" in child.contents[0].attrs.keys():
             return [display_math_formatter(child.contents[0]["alt"])]
+        if child.contents[0].name == "a" and child.contents[1].name == "img":
+            # this may break if the case handling <a name="..."> below is changed.
+            # specifically, we place the <a name="..."> at the beginning of the p tag.
+            return [
+                labelled_display_math_formatter(
+                    child.contents[1]["alt"], child.contents[0]["name"]
+                )
+            ]
+
         elif child.contents[0].name == "b":
             return [section_formatter(child.contents[0].get_text())]
         else:
             return soup_processor(child)
     elif child.name == "img" and "alt" in child.attrs.keys():
-        return [inline_math_formatter(child["alt"])]
+        return [math_formatter(child["alt"])]
     elif child.name == "img":
         # TODO: save images and appropriately format
         return ["\n unknown image found \n"]
@@ -183,7 +210,24 @@ def child_processor(child: PageElement) -> list[str]:
     elif (
         child.name == "a" and "name" in child.attrs.keys() and len(child.contents) == 0
     ):
-        return [tag_formatter(child.attrs["name"])]
+        # In LaTeX, labels need to appear inside of the environment it labels.
+        # We move this into the heuristically determined correct environment and defer processing
+        # this until processing <p align="..."> tags.
+        # if this ever breaks, good luck whoever wants to debug this in the future...
+        if (
+            (parent := child.parent)
+            and parent.name == "p"
+            and "align" not in parent.attrs.keys()
+            and parent.contents[-1] == child
+            and (second_uncle := parent.next_sibling.next_sibling)
+            and second_uncle.name == "p"
+            and "align" in second_uncle.attrs.keys()
+        ):
+            # make second_uncle adopt child
+            second_uncle.insert(0, child)
+            return []
+        # fallback
+        return [label_formatter(child.attrs["name"])]
     elif child.name == "blockquote":
         if child.b:
             unprocessed_thm_name = (
@@ -197,7 +241,7 @@ def child_processor(child: PageElement) -> list[str]:
             unprocessed_thm_name = "unknown"
         return theorem_wrapper(unprocessed_thm_name, child)
     elif child.name == "p":
-        return soup_processor(child) + ["\n"]
+        return soup_processor(child)
     elif (
         child.name == "div"
         and ("class" in child.attrs.keys() and child.attrs["class"][0] == "sharedaddy")
@@ -210,7 +254,8 @@ def child_processor(child: PageElement) -> list[str]:
 
 
 def soup_processor(soup: BeautifulSoup) -> list[str]:
-    """converts a BeautifulSoup into a list of legal LaTeX strings"""
+    """A simple loop on child_processor that converts a BeautifulSoup
+    into a list of legal LaTeX strings."""
     out = []
     for child in soup.children:
         out.extend(child_processor(child))
@@ -218,10 +263,14 @@ def soup_processor(soup: BeautifulSoup) -> list[str]:
     return out
 
 
-def preamble_processor(template_filename: str, author: str, title: str) -> str:
-    """spit out a preamble using the template
-    CAUTION, something about this is making raw strings act weirdly,
-    so that I still need double backslashes"""
+def preamble_formatter(template_filename: str, author: str, title: str) -> str:
+    """spit out a preamble as a long string, using the template"""
+
+    # if you don't escape the slahes, the regex will not work
+    slash_escaper = re.compile(r"\\")
+    author = slash_escaper.sub(r"\\\\", author)
+    title = slash_escaper.sub(r"\\\\", title)
+
     with open(template_filename, "r", encoding="UTF-8") as template:
         out = template.read()
         author_matcher = re.compile(r"TTT-AUTHOR")
@@ -251,26 +300,20 @@ def main():
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
     metadata_as_string = "".join(metadata)
 
-    slash_escaper = re.compile(r"\\")
-    metadata_as_string = slash_escaper.sub(r"\\\\", metadata_as_string)
-    tao2tex_signature = slash_escaper.sub(r"\\\\", tao2tex_signature)
-
-    preamble = preamble_processor(
+    preamble = preamble_formatter(
         template_filename="preamble.tex",
         author="",
-        title=r"{\\normalsize "
+        title=r"{\normalsize "
         + blog_title
-        + r"\\\\"
+        + r"\\"
         + blog_tagline
-        + r"}\\\\"
+        + r"}\\"
         + title
-        + r"\\footnote{"
+        + r"\footnote{"
         + tao2tex_signature
-        + r"}\\\\ \\footnotesize "
+        + r"}\\ \footnotesize "
         + metadata_as_string,
     )
-    # print(blog_title, blog_tagline)
-    # print(title)
 
     content = primary_soup.find(attrs={"class": "post-content"})
 
@@ -287,7 +330,6 @@ def main():
     # TODO: what about "" into ``''? then '' into `'? and {\bf} into \mathbf{}?
     # TODO: convert &nbsp; to '~' (which is precisely a nonbreaking space in LaTeX)
     # TODO: allow user to fetch from the internet
-    # TODO: fix labels for displaystyle maths
 
 
 if __name__ == "__main__":
