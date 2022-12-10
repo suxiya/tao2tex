@@ -9,11 +9,11 @@ https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/
 At the moment, this is hard-coded to work only for Tao's blogposts.
 
 naming conventions:
-    a formatter function returns a string, 
-    a wrapper function calls soup_processor or child_processor somewhere and returns a list of strings.
+    a formatter function returns a string,
+    a wrapper function calls soup_processor or child_processor somewhere
+    and returns a list of strings.
 """
-
-
+import argparse
 import re  # https://regexkit.com/python-regex
 
 import requests
@@ -31,13 +31,24 @@ from bs4 import (
 # print(r.text)
 # soup = BeautifulSoup(response)
 
-DEFAULT_HTML1 = "test1.html"
-DEFAULT_HTML2 = "test2.html"
+TIMEOUT_IN_SECONDS = 10
 
 
-def soup_maker(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
+def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
     """Creates a new soup from the raw html with an optional SoupStrainer."""
-    with open(user_html, "r", encoding="UTF-8") as html_doc:
+    try:
+        soup = BeautifulSoup(user_html, "lxml", parse_only=strainer)
+    except FeatureNotFound:
+        print(
+            "You should install the lxml parser: pip install lxml\n Trying with default parser"
+        )
+        soup = BeautifulSoup(user_html, parse_only=strainer)
+    return soup
+
+
+def soup_maker(html_file_name: str, strainer: SoupStrainer) -> BeautifulSoup:
+    """Creates a new soup from the raw html in the file with an optional SoupStrainer."""
+    with open(html_file_name, "r", encoding="UTF-8") as html_doc:
         try:
             soup = BeautifulSoup(html_doc.read(), "lxml", parse_only=strainer)
         except FeatureNotFound:
@@ -218,8 +229,10 @@ def child_processor(child: PageElement) -> list[str]:
     """
     if isinstance(child, NavigableString):
         return [string_formatter(child.get_text())]
+
     elif child.name == "em":
         return em_wrapper(child)
+
     elif child.name == "p" and "align" in child.attrs.keys():
         if child.contents[0].name == "img" and "alt" in child.contents[0].attrs.keys():
             return [display_math_formatter(child.contents[0]["alt"])]
@@ -235,12 +248,15 @@ def child_processor(child: PageElement) -> list[str]:
         elif child.contents[0].name == "b":
             return [section_formatter(child.contents[0].get_text())]
         else:
+            # fallback processing.
+            print('fallback to basic processing in p align="..." tag')
+            print(f"{child=}"[:50])
             return soup_processor(child)
     elif child.name == "img" and "alt" in child.attrs.keys():
         return [math_formatter(child["alt"])]
     elif child.name == "img":
         # TODO: save images and appropriately format. NB add graphicx package
-        return ["\n unknown image found \n"]
+        return [f"\n unknown image: {child=} \n"[:50]]
     elif child.name == "a" and "href" in child.attrs.keys():
         return [ahref_formatter(child["href"], child.get_text())]
     elif (
@@ -262,8 +278,6 @@ def child_processor(child: PageElement) -> list[str]:
             # make second_uncle adopt child
             second_uncle.insert(0, child)
             return []
-        # fallback
-        print(f"using fallback in child_processor for a {child.name} tag")
         return [label_formatter(child.attrs["name"])]
     elif child.name == "blockquote":
         if child.b:
@@ -275,7 +289,9 @@ def child_processor(child: PageElement) -> list[str]:
                 child.p.b.extract().get_text()
             )  # NB extract() removes the tag so that it is not processed twice.
         else:
-            unprocessed_thm_name = "unknown"
+            print("unknown theorem: falling back to theorem")
+            print(f"{child=}"[:50])
+            unprocessed_thm_name = "theorem"
         return theorem_wrapper(unprocessed_thm_name, child)
     elif child.name == "p":
         return soup_processor(child)
@@ -293,6 +309,8 @@ def child_processor(child: PageElement) -> list[str]:
         return []
     else:
         # fallback to get_text
+        print("unknown tag:")
+        print(f"{child=}"[:50])
         return [child.get_text()]
 
 
@@ -323,22 +341,28 @@ def preamble_formatter(template_filename: str, author: str, title: str) -> str:
         return out
 
 
-def main():
-    """Goes through a HTML version of a blogpost and spits out a LaTeX version"""
-    url = DEFAULT_HTML1
+def url2tex(url: str, local: bool, output):
+    "opens a url (or file) and creates a tex file with name given by output"
+    raw_html = ""
+    if local:
+        with open(url, "r", encoding="UTF-8") as html_doc:
+            raw_html = html_doc.read()
+    else:
+        raw_html = requests.get(url, timeout=TIMEOUT_IN_SECONDS).text
+
     tao2tex_signature = (
-        r"Automatically generated using \texttt{tao2tex.py} from "
+        "Automatically generated from "
         + ahref_formatter(url)
-        + "."
+        + r" using \texttt{tao2tex.py}."
     )
 
     header_strainer = SoupStrainer("div", id="header")
-    header_soup = soup_maker(url, header_strainer)
+    header_soup = html2soup(raw_html, header_strainer)
     blog_title = header_soup.find(id="blog-title").get_text()
     blog_tagline = header_soup.find(id="tagline").get_text()
 
     primary_strainer = SoupStrainer("div", id="primary")
-    primary_soup = soup_maker(url, primary_strainer)
+    primary_soup = html2soup(raw_html, primary_strainer)
     title = primary_soup.h1.get_text()
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
     metadata_as_string = "".join(metadata)
@@ -365,16 +389,43 @@ def main():
         + soup_processor(content)
         + [r"\end{document}"]
     )
-
-    with open("out.tex", "w", encoding="utf-8") as output_file:
+    if not output:
+        output = blog_title + "-" + title
+    with open(output, "w", encoding="utf-8") as output_file:
         output_file.write("".join(out))
 
+
+def main():
+    """Goes through a HTML version of a blogpost and spits out a LaTeX version"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-b", "--batch", help="batch process files", action="store_true"
+    )
+    parser.add_argument(
+        "-l", "--local", help="treat url as a local file", action="store_true"
+    )
+    parser.add_argument("url", help="url of blog post to convert")
+    parser.add_argument("-o", "--output", help="name of output file")
+    args = parser.parse_args()
+
+    if args.batch:
+        with open(args.url, "w", encoding="utf8") as file:
+            list_of_filenames = file.readlines()
+            for filename, i in enumerate(list_of_filenames):
+                numbered_name = None
+                if args.output:
+                    numbered_name = args.output + str(i)
+                url2tex(filename, args.local, numbered_name)
+    else:
+        url2tex(args.url, args.local, args.output)
+
+    # TODO: error handling for file opening? catch FileNotFoundError for locals
     # TODO: also parse the comments: potentially has bad tex
-    # TODO: what about "" into ``''? then '' into `'? and {\bf} into \mathbf{}?
-    # TODO: allow user to fetch from the internet
-    # TODO: allow batch processing
+    # TODO: test batch processing
     # TODO: make preamble fancier
     # TODO: for speed reasons perhaps move all regexes into main
+    # TODO: add more fallbacks e.g. title finding so that some sort of output is generated for other blogs
+    # TODO: figure out how to state the required packages
 
 
 if __name__ == "__main__":

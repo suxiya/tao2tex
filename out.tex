@@ -17,30 +17,551 @@
 	\newtheorem{definition}[theorem]{Definition}
 	\newtheorem{example}[theorem]{Example}
 	\newtheorem{exercise}[theorem]{Exercise}
-\theoremstyle{remark}
+% \theoremstyle{remark}
 	\newtheorem{remark}[theorem]{Remark}
 	\newtheorem{note}[theorem]{Note}
 
-\title{{\normalsize What's new\\Updates on my research and expository papers, discussion of open problems, and other maths-related topics.  By Terence Tao}\\A counterexample to the periodic tiling conjecture\footnote{Automatically generated using \texttt{tao2tex.py} from test1.html.}\\ \footnotesize 29 November, 2022 in \href{https://terrytao.wordpress.com/category/mathematics/mathco/}{math.CO}, \href{https://terrytao.wordpress.com/category/paper/}{paper} \textbar Tags: \href{https://terrytao.wordpress.com/tag/periodic-tiling-conjecture/}{periodic tiling conjecture}, \href{https://terrytao.wordpress.com/tag/rachel-greenfeld/}{Rachel Greenfeld} }
+\title{{\normalsize What's new\\Updates on my research and expository papers, discussion of open problems, and other maths-related topics.  By Terence Tao}\\247B, Notes 3: pseudodifferential operators\footnote{Automatically generated from test2.html using \texttt{tao2tex.py}.}\\ \footnotesize 2 May, 2020 in \href{https://terrytao.wordpress.com/category/teaching/247b-classical-fourier-analysis/}{247B - Classical Fourier Analysis}, \href{https://terrytao.wordpress.com/category/mathematics/mathap/}{math.AP}, \href{https://terrytao.wordpress.com/category/mathematics/mathca/}{math.CA}, \href{https://terrytao.wordpress.com/category/mathematics/mathqa/}{math.QA} \textbar Tags: \href{https://terrytao.wordpress.com/tag/almost-orthogonality/}{almost orthogonality}, \href{https://terrytao.wordpress.com/tag/pseudodifferential-operators/}{pseudodifferential operators}, \href{https://terrytao.wordpress.com/tag/quantum-mechanics/}{quantum mechanics}, \href{https://terrytao.wordpress.com/tag/singular-integrals/}{singular integrals} }
 \author{}
 \date{Last compiled: \today}
 \begin{document}\maketitle
 
-\href{https://www.ias.edu/scholars/rachel-greenfeld}{Rachel Greenfeld} and I have just uploaded to the arXiv our paper “\href{https://arxiv.org/abs/2211.15847}{A counterexample to the periodic tiling conjecture}“. This is the full version of the result I announced on this blog \href{https://terrytao.wordpress.com/2022/09/19/a-counterexample-to-the-periodic-tiling-conjecture/}{a few months ago}, in which we disprove the \emph{periodic tiling conjecture} of \href{https://mathscinet.ams.org/mathscinet-getitem?mr=857454}{Grünbaum-Shephard} and \href{https://mathscinet.ams.org/mathscinet-getitem?mr=1369421}{Lagarias-Wang}. The paper took a little longer than expected to finish, due to a technical issue that we did not realize at the time of the announcement that required a workaround. 
+ In contrast to previous notes, in this set of notes we shall focus exclusively on Fourier analysis in the one-dimensional setting \({d=1}\) for simplicity of notation, although all of the results here have natural extensions to higher dimensions. Depending on the physical context, one can view the physical domain \({{\bf R}}\) as representing either space or time; we will mostly think in terms of the former interpretation, even though the standard terminology of “time-frequency analysis”, which we will make more prominent use of in later notes, clearly originates from the latter.
 
-In more detail: the original strategy, as described in the announcement, was to build a “tiling language” that was capable of encoding a certain “\({p}\)-adic Sudoku puzzle”, and then show that the latter type of puzzle had only non-periodic solutions if \({p}\) was a sufficiently large prime. As it turns out, the second half of this strategy worked out, but there was an issue in the first part: our tiling language was able (using \({2}\)-group-valued functions) to encode arbitrary boolean relationships between boolean functions, and was also able (using \({{\bf Z}/p{\bf Z}}\)-valued functions) to encode “clock” functions such as \({n \mapsto n \hbox{ mod } p}\) that were part of our \({p}\)-adic Sudoku puzzle, but we were not able to make these two types of functions “talk” to each other in the way that was needed to encode the \({p}\)-adic Sudoku puzzle (the basic problem being that if \({H}\) is a finite abelian \({2}\)-group then there are no non-trivial subgroups of \({H \times {\bf Z}/p{\bf Z}}\) that are not contained in \({H}\) or trivial in the \({{\bf Z}/p{\bf Z}}\) direction). As a consequence, we had to replace our “\({p}\)-adic Sudoku puzzle” by a “\({2}\)-adic Sudoku puzzle” which basically amounts to replacing the prime \({p}\) by a sufficiently large power of \({2}\) (we believe \({2^{10}}\) will suffice). This solved the encoding issue, but the analysis of the \({2}\)-adic Sudoku puzzles was a little bit more complicated than the \({p}\)-adic case, for the following reason. The following is a nice exercise in analysis:
 
-\begin{theorem}[Linearity in three directions implies full linearity]
-  Let \({F: {\bf R}^2 \rightarrow {\bf R}}\) be a smooth function which is affine-linear on every horizontal line, diagonal (line of slope \({1}\)), and anti-diagonal (line of slope \({-1}\)). In other words, for any \({c \in {\bf R}}\), the functions \({x \mapsto F(x,c)}\), \({x \mapsto F(x,c+x)}\), and \({x \mapsto F(x,c-x)}\) are each affine functions on \({{\bf R}}\). Then \({F}\) is an affine function on \({{\bf R}^2}\). 
+In previous notes we have often performed various localisations in either physical space or Fourier space \({{\bf R}}\), for instance in order to take advantage of the uncertainty principle. One can formalise these operations in terms of the functional calculus of two basic operations on Schwartz functions \({{\mathcal S}({\bf R})}\), the \emph{position operator} \({X: {\mathcal S}({\bf R}) \rightarrow {\mathcal S}({\bf R})}\) defined by 
+\[\displaystyle  (Xf)(x) := x f(x)\]
+ and the \emph{momentum operator} \({D: {\mathcal S}({\bf R}) \rightarrow {\mathcal S}({\bf R})}\), defined by 
+\begin{align}\label{df}
+  (Df)(x) := \frac{1}{2\pi i} \frac{d}{dx} f(x). 
+\end{align}
+ (The terminology comes from quantum mechanics, where it is customary to also insert a small constant \({h}\) on the right-hand side of \eqref{df} in accordance with \href{https://en.wikipedia.org/wiki/Matter_wave}{de Broglie’s law}. Such a normalisation is also used in several branches of mathematics, most notably semiclassical analysis and \href{https://en.wikipedia.org/wiki/Microlocal_analysis}{microlocal analysis}, where it becomes profitable to consider the \href{https://en.wikipedia.org/wiki/Semiclassical_physics}{semiclassical limit} \({h \rightarrow 0}\), but we will not emphasise this perspective here.) The momentum operator can be viewed as the counterpart to the position operator, but in frequency space instead of physical space, since we have the standard identity 
+\[\displaystyle  \widehat{Df}(\xi) = \xi \hat f(\xi)\]
+ for any \({\xi \in {\bf R}}\) and \({f \in {\mathcal S}({\bf R})}\). We observe that both operators \({X,D}\) are formally self-adjoint in the sense that 
+\[\displaystyle  \langle Xf, g \rangle = \langle f, Xg \rangle; \quad \langle Df, g \rangle = \langle f, Dg \rangle\]
+ for all \({f,g \in {\mathcal S}({\bf R})}\), where we use the \({L^2({\bf R})}\) Hermitian inner product 
+\[\displaystyle  \langle f, g\rangle := \int_{\bf R} f(x) \overline{g(x)}\ dx.\]
+
+Clearly, for any polynomial \({P(x)}\) of one real variable \({x}\) (with complex coefficients), the operator \({P(X): {\mathcal S}({\bf R}) \rightarrow {\mathcal S}({\bf R})}\) is given by the spatial multiplier operator 
+\[\displaystyle  (P(X) f)(x) = P(x) f(x)\]
+ and similarly the operator \({P(D): {\mathcal S}({\bf R}) \rightarrow {\mathcal S}({\bf R})}\) is given by the Fourier multiplier operator 
+\[\displaystyle  \widehat{P(D) f}(\xi) = P(\xi) \hat f(\xi).\]
+ Inspired by this, if \({m: {\bf R} \rightarrow {\bf C}}\) is any smooth function that obeys the derivative bounds 
+\begin{align}\label{deriv}
+  \frac{d^j}{dx^j} m(x) \lesssim_{m,j} \langle x \rangle^{O_{m,j}(1)} 
+\end{align}
+ for all \({j \geq 0}\) and \({x \in {\bf R}}\) (that is to say, all derivatives of \({m}\) grow at most polynomially), then we can define the spatial multiplier operator \({m(X): {\mathcal S}({\bf R}) \rightarrow {\mathcal S}({\bf R})}\) by the formula 
+\[\displaystyle  (m(X) f)(x) := m(x) f(x);\]
+ one can easily verify from several applications of the Leibniz rule that \({m(X)}\) maps Schwartz functions to Schwartz functions. We refer to \({m(x)}\) as the \emph{symbol} of this spatial multiplier operator. In a similar fashion, we define the Fourier multiplier operator \({m(D)}\) associated to the symbol \({m(\xi)}\) by the formula 
+\[\displaystyle  \widehat{m(D) f}(\xi) := m(\xi) \hat f(\xi).\]
+ For instance, any constant coefficient linear differential operators \({\sum_{k=0}^n c_k \frac{d^k}{dx^k}}\) can be written in this notation as 
+\[\displaystyle \sum_{k=0}^n c_k \frac{d^k}{dx^k} =\sum_{k=0}^n c_k (2\pi i D)^k;\]
+ however there are many Fourier multiplier operators that are not of this form, such as fractional derivative operators \({\langle D \rangle^s = (1- \frac{1}{4\pi^2} \frac{d^2}{dx^2})^{s/2}}\) for non-integer values of \({s}\), which is a Fourier multiplier operator with symbol \({\langle \xi \rangle^s}\). It is also very common to use spatial cutoffs \({\psi(X)}\) and Fourier cutoffs \({\psi(D)}\) for various bump functions \({\psi}\) to localise functions in either space or frequency; we have seen several examples of such cutoffs in action in previous notes (often in the higher dimensional setting \({d>1}\)).
+
+We observe that the maps \({m \mapsto m(X)}\) and \({m \mapsto m(D)}\) are ring homomorphisms, thus for instance 
+\[\displaystyle  (m_1 + m_2)(D) = m_1(D) + m_2(D)\]
+ and 
+\[\displaystyle  (m_1 m_2)(D) = m_1(D) m_2(D)\]
+ for any \({m_1,m_2}\) obeying the derivative bounds \eqref{deriv}; also \({m(D)}\) is formally adjoint to \({\overline{m(D)}}\) in the sense that 
+\[\displaystyle  \langle m(D) f, g \rangle = \langle f, \overline{m}(D) g \rangle\]
+ for \({f,g \in {\mathcal S}({\bf R})}\), and similarly for \({m(X)}\) and \({\overline{m}(X)}\). One can interpret these facts as part of the \href{https://en.wikipedia.org/wiki/Functional_calculus}{functional calculus} of the operators \({X,D}\), which can be interpreted as densely defined self-adjoint operators on \({L^2({\bf R})}\). However, in this set of notes we will not develop the spectral theory necessary in order to fully set out this functional calculus rigorously.
+
+In the field of PDE and ODE, it is also very common to study \emph{variable coefficient} linear differential operators 
+\begin{align}\label{ckk}
+  \sum_{k=0}^n c_k(x) \frac{d^k}{dx^k} 
+\end{align}
+ where the \({c_0,\dots,c_n}\) are now functions of the spatial variable \({x}\) obeying the derivative bounds \eqref{deriv}. A simple example is the \href{https://en.wikipedia.org/wiki/Quantum_harmonic_oscillator}{quantum harmonic oscillator Hamiltonian} \({-\frac{d^2}{dx^2} + x^2}\). One can rewrite this operator in our notation as 
+\[\displaystyle  \sum_{k=0}^n c_k(X) (2\pi i D)^k\]
+ and so it is natural to interpret this operator as a combination \({a(X,D)}\) of both the position operator \({X}\) and the momentum operator \({D}\), where the \emph{symbol} \({a: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) this operator is the function 
+\begin{align}\label{akk}
+  a(x,\xi) := \sum_{k=0}^n c_k(x) (2\pi i \xi)^k. 
+\end{align}
+ Indeed, from the Fourier inversion formula 
+\[\displaystyle  f(x) = \int_{\bf R} \hat f(\xi) e^{2\pi i x \xi}\ d\xi\]
+ for any \({f \in {\mathcal S}({\bf R})}\) we have 
+\[\displaystyle  (2\pi i D)^k f(x) = \int_{\bf R} (2\pi i \xi)^k \hat f(\xi) e^{2\pi i x \xi}\ d\xi\]
+ and hence on multiplying by \({c_k(x)}\) and summing we have 
+\[\displaystyle (\sum_{k=0}^n c_k(X) (2\pi i D)^k) f(x) = \int_{\bf R} a(x,\xi) \hat f(\xi) e^{2\pi i x \xi}\ d\xi.\]
+ Inspired by this, we can introduce the \emph{Kohn-Nirenberg quantisation} by defining the operator \({a(X,D) = a_{KN}(X,D): {\mathcal S}({\bf R}) \rightarrow {\mathcal S}({\bf R})}\) by the formula 
+\begin{align}\label{axd}
+  a(X,D) f(x) = \int_{\bf R} a(x,\xi) \hat f(\xi) e^{2\pi i x \xi}\ d\xi 
+\end{align}
+ whenever \({f \in {\mathcal S}({\bf R})}\) and \({a: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) is any smooth function obeying the derivative bounds 
+\begin{align}\label{deriv-2}
+  \frac{\partial^j}{\partial x^j} \frac{\partial^l}{\partial \xi^l} a(x,\xi) \lesssim_{a,j,l} \langle x \rangle^{O_{a,j}(1)} \langle \xi \rangle^{O_{a,j,l}(1)} 
+\end{align}
+ for all \({j,l \geq 0}\) and \({x \in {\bf R}}\) (note carefully that the exponent in \({x}\) on the right-hand side is required to be uniform in \({l}\)). This quantisation clearly generalises both the spatial multiplier operators \({m(X)}\) and the Fourier multiplier operators \({m(D)}\) defined earlier, which correspond to the cases when the symbol \({a(x,\xi)}\) is a function of \({x}\) only or \({\xi}\) only respectively. Thus we have combined the physical space \({{\bf R} = \{ x: x \in {\bf R}\}}\) and the frequency space \({{\bf R} = \{ \xi: \xi \in {\bf R}\}}\) into a single domain, known as \href{https://en.wikipedia.org/wiki/Phase_space}{phase space} \({{\bf R} \times {\bf R} = \{ (x,\xi): x,\xi \in {\bf R} \}}\). The term “time-frequency analysis” encompasses analysis based on decompositions and other manipulations of phase space, in much the same way that “Fourier analysis” encompasses analysis based on decompositions and other manipulations of frequency space. We remark that the Kohn-Nirenberg quantization is not the only choice of quantization one could use; see Remark \ref{weyl} below.
+\begin{exercise}
+ \label{unq} 
+\begin{itemize}
+
+\item[(i)] Show that for \({a}\) obeying \eqref{deriv-2}, that \({a(X,D)}\) does indeed map \({{\mathcal S}({\bf R})}\) to \({{\mathcal S}({\bf R})}\). 
+\item[(ii)] Show that the symbol \({a}\) is uniquely determined by the operator \({a(X,D)}\). That is to say, if \({a,b}\) are two functions obeying \eqref{deriv-2} with \({a(X,D) f = b(X,D) f}\) for all \({f \in {\mathcal S}({\bf R})}\), then \({a=b}\). (\emph{Hint:} apply \({a(X,D)-b(X,D)}\) to a suitable truncation of a plane wave \({x \mapsto e^{2\pi i x \xi}}\) and then take limits.)
+
+
+\end{itemize}
+
+\end{exercise}
+
+In principle, the quantisations \({a(X,D)}\) are potentially very useful for such tasks as inverting variable coefficient linear operators, or to localize a function simultaneously in physical and Fourier space. However, a fundamental difficulty arises: map from symbols \({a}\) to operators \({a(X,D)}\) is now no longer a ring homomorphism, in particular 
+\begin{align}\label{ringho}
+  (a_1 a_2)(X,D) \neq a_1(X,D) a_2(X,D) 
+\end{align}
+ in general. Fundamentally, this is due to the fact that pointwise multiplication of symbols is a commutative operation, whereas the composition of operators such as \({X}\) and \({D}\) does not necessarily commute. This lack of commutativity can be measured by introducing the \emph{commutator} 
+\[\displaystyle  [A,B] := AB - BA\]
+ of two operators \({A,B}\), and noting from the product rule that 
+\[\displaystyle  [X,D] = -\frac{1}{2\pi i} \neq 0.\]
+ (In the language of Lie groups and Lie algebras, this tells us that \({X,D}\) are (up to complex constants) the standard Lie algebra generators of the \href{https://en.wikipedia.org/wiki/Heisenberg_group}{Heisenberg group}.) From a quantum mechanical perspective, this lack of commutativity is the root cause of the \href{https://en.wikipedia.org/wiki/Uncertainty_principle}{uncertainty principle} that prevents one from simultaneously localizing in both position and momentum past a certain point. Here is one basic way of formalising this principle:
+\begin{exercise}[Heisenberg uncertainty principle]
+ \label{hup} For any \({x_0, \xi_0 \in {\bf R}}\) and \({f \in \mathcal{S}({\bf R})}\), show that 
+\[\displaystyle  \| (X-x_0) f \|_{L^2({\bf R})} \| (D-\xi_0) f\|_{L^2({\bf R})} \geq \frac{1}{4\pi} \|f\|_{L^2({\bf R})}^2.\]
+ (\emph{Hint:} evaluate the expression \({\langle [X-x_0, D - \xi_0] f, f \rangle}\) in two different ways and apply the Cauchy-Schwarz inequality.) Informally, this exercise asserts that the spatial uncertainty \({\Delta x}\) and the frequency uncertainty \({\Delta \xi}\) of a function obey the Heisenberg uncertainty relation \({\Delta x \Delta \xi \gtrsim 1}\). 
+\end{exercise}
+
+ Nevertheless, one still has the \href{https://en.wikipedia.org/wiki/Correspondence_principle}{correspondence principle}, which asserts that in certain regimes (which, with our choice of normalisations, corresponds to the high-frequency regime), quantum mechanics continues to behave like a commutative theory, and one can sometimes proceed as if the operators \({X,D}\) (and the various operators \({a(X,D)}\) constructed from them) commute up to “lower order” errors. This can be formalised using the \emph{pseudodifferential calculus}, which we give below the fold, in which we restrict the symbol \({a}\) to certain “symbol classes” of various orders (which then restricts \({a(X,D)}\) to be \href{https://en.wikipedia.org/wiki/Pseudo-differential_operator}{pseudodifferential operators} of various orders), and obtains approximate identities such as 
+\[\displaystyle  (a_1 a_2)(X,D) \approx a_1(X,D) a_2(X,D)\]
+ where the error between the left and right-hand sides is of “lower order” and can in fact enjoys a useful asymptotic expansion. As a first approximation to this calculus, one can think of functions \({f \in {\mathcal S}({\bf R})}\) as having some sort of “\href{https://en.wikipedia.org/wiki/Phase_portrait}{phase space portrait}” \({\tilde f(x,\xi)}\) which somehow combines the physical space representation \({x \mapsto f(x)}\) with its Fourier representation \({\xi \mapsto f(\xi)}\), and pseudodifferential operators \({a(X,D)}\) behave approximately like “phase space multiplier operators” in this representation in the sense that 
+\[\displaystyle  \widetilde{a(X,D) f}(x,\xi) \approx a(x,\xi) \tilde f(x,\xi).\]
+ Unfortunately the uncertainty principle (or the non-commutativity of \({X}\) and \({D}\)) prevents us from making these approximations perfectly precise, and it is not always clear how to even define a phase space portrait \({\tilde f}\) of a function \({f}\) precisely (although there are certain popular candidates for such a portrait, such as the \href{https://en.wikipedia.org/wiki/Fourier%E2%80%93Bros%E2%80%93Iagolnitzer_transform}{FBI transform} (also known as the \href{https://en.wikipedia.org/wiki/Gabor_transform}{Gabor transform} in signal processing literature), or the \href{https://en.wikipedia.org/wiki/Wigner_quasiprobability_distribution}{Wigner quasiprobability distribution}, each of which have some advantages and disadvantages). Nevertheless even if the concept of a phase space portrait is somewhat fuzzy, it is of great conceptual benefit both within mathematics and outside of it. For instance, the musical score one assigns a piece of music can be viewed as a phase space portrait of the sound waves generated by that music.
+
+To complement the pseudodifferential calculus we have the basic \emph{Calderón-Vaillancourt theorem}, which asserts that pseudodifferential operators of order zero are Calderón-Zygmund operators and thus bounded on \({L^p({\bf R})}\) for \({1 < p < \infty}\). The standard proof of this theorem is a classic application of one of the basic techniques in harmonic analysis, namely the exploitation of \emph{almost orthogonality}; the proof we will give here will achieve this through the elegant device of the \href{https://en.wikipedia.org/wiki/Cotlar%E2%80%93Stein_lemma}{Cotlar-Stein lemma}.
+
+
+Pseudodifferential operators (especially when generalised to higher dimensions \({d \geq 1}\)) are a fundamental tool in the theory of linear PDE, as well as related fields such as semiclassical analysis, microlocal analysis, and geometric quantisation. There is an even wider class of operators that is also of interest, namely the \href{https://en.wikipedia.org/wiki/Fourier_integral_operator}{Fourier integral operators}, which roughly speaking not only approximately multiply the phase space portrait \({\tilde f(x,\xi)}\) of a function by some multiplier \({a(x,\xi)}\), but also move the portrait around by a \href{https://en.wikipedia.org/wiki/Canonical_transformation}{canonical transformation}. However, the development of theory of these operators is beyond the scope of these notes; see for instance the texts \href{https://mathscinet.ams.org/mathscinet-getitem?mr=1481433}{of Hormander} or \href{https://mathscinet.ams.org/mathscinet-getitem?mr=2809923}{Eskin}.
+
+
+This set of notes is only the briefest introduction to the theory of pseudodifferential operators. Many texts are available that cover the theory in more detail, for instance \href{https://mathscinet.ams.org/mathscinet-getitem?mr=1766415}{this text of Taylor}.
+
+
+
+
+\section{Pseudodifferential operators}
+
+The Kohn-Nirenberg quantisation \({a(X,D)}\) was defined above for any symbol \({a: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) obeying the very loose estimates \eqref{deriv-2}. To obtain a clean theory it is convenient to focus attention to more restrictive classes of symbols. There are many such classes one can consider, but we shall only work with the classical symbol classes:
+
+\begin{definition}[Classical symbol class]
+ \label{symb} Let \({\alpha \in {\bf R}}\). A function \({a: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) is said to be a (classical) \emph{symbol of order \({\alpha}\)} if it is smooth and one has the derivative bounds 
+\begin{align}\label{class-symb}
+  \frac{\partial^j}{\partial x^j} \frac{\partial^l}{\partial \xi^l} a(x,\xi) \lesssim_{a,j,l} \langle \xi \rangle^{\alpha - l} 
+\end{align}
+ for all \({j,l \geq 0}\) and \({(x,\xi) \in {\bf R} \times {\bf R}}\). (Informally: \({a}\) “behaves like” \({\langle \xi \rangle^\alpha}\), with each derivative in the frequency variable gaining an additional decay factor of \({\langle \xi \rangle^{-1}}\), but with each derivative in the spatial variable exhibiting no gain.) The collection of all symbols of order \({\alpha}\) will be denoted \({{\mathcal S}^\alpha}\). If \({a}\) is a symbol of order \({\alpha}\), the operator \({a(X,D)}\) is referred to as a \href{https://en.wikipedia.org/wiki/Pseudo-differential_operator}{pseudodifferential operator} of order \({\alpha}\). 
+\end{definition}
+
+As a major motivating example, any variable coefficient linear differential operator \eqref{ckk} of order \({n}\) will be a pseudodifferential operator of order \({n}\), so long as the coefficients \({c_0,\dots,c_n}\) obey the bounds 
+\begin{align}\label{cb}
+  \frac{d^j}{d x^j} c_k(x) \lesssim_{c_k, j} 1 
+\end{align}
+ for \({j \geq 0}\), \({k=0,\dots,n}\), and \({x \in {\bf R}}\). (This would then exclude operators with unbounded coefficients, such as the harmonic oscillator, but can handle localised versions of these operators, and in any event there are other symbol classes in the literature that can be used to handle certain types of differential operators with unbounded coefficients.) Also, a fractional differential operator such as \({(1 - 4\pi^2 \frac{d^2}{dx^2})^{\alpha/2} = \langle D \rangle^\alpha}\) will be a pseudodifferential operator of order \({\alpha}\) for any \({\alpha \in {\bf R}}\). We refer the reader to \href{https://mathscinet.ams.org/mathscinet-getitem?mr=1232192}{Stein’s text} for a discussion of more exotic symbol classes than the one given here.
+
+
+The space of pseudodifferential operators of order \({\alpha}\) form a vector space that is non-decreasing in \({\alpha}\): any pseudodifferential operator of order \({\alpha}\) is automatically also of order \({\beta}\) for any \({\beta>\alpha}\). (Thus, strictly speaking, it would be more appropriate to say that \({a(X,D)}\) is a pseudodifferential operator of order \emph{at most} \({\alpha}\) if \({a \in S^\alpha}\), but we will not adopt this convention for brevity.) The intuition to keep in mind is that a pseudodifferential operator of order \({\alpha}\) behaves like a variable coefficient linear differential operator of order \({\alpha}\), with the obvious caveat that in the latter case \({\alpha}\) is restricted to be a natural number, whereas in the former \({\alpha}\) can be any real number. This intuition will be supported by the various components of the \emph{pseudodifferential calculus} that we shall develop later, for instance we will show that the composition of a pseudodifferential operator of order \({\alpha}\) and a pseudodifferential operator of order \({\beta}\) is a pseudodifferential operator of order \({\alpha+\beta}\).
+
+
+Before we set out this calculus, though, we give a fundamental \({L^p}\) estimate, which can be viewed as a variable coefficient version of the \href{https://en.wikipedia.org/wiki/Multiplier_(Fourier_analysis)#Mikhlin_multiplier_theorem}{Hörmander-Mikhlin multiplier theorem}:
+
+\begin{theorem}[Calderón-Vallaincourt theorem]
+ \label{cv} Let \({1 < p < \infty}\), and let \({a(X,D)}\) be a pseudodifferential operator of order \({0}\). Then one has 
+\begin{align}\label{clp}
+  \| a(X,D) f\|_{L^p({\bf R})} \lesssim_{a,p} \|f\|_{L^p({\bf R})} 
+\end{align}
+ for all \({f \in {\mathcal S}({\bf R})}\). In particular, \({a(X,D)}\) extends to a bounded linear operator on each \({L^p({\bf R})}\) space with \({1 < p < \infty}\). 
 \end{theorem}
 
+We now begin the proof of this theorem. The first step is a dyadic decomposition of Littlewood-Paley type. Let \({\phi \in C^\infty_c({\bf R})}\) be a bump function supported on \({[-1,1]}\) that equals \({1}\) on \({[-1/2,1/2]}\). Then we can write 
+\[\displaystyle  a(x,\xi) = \sum_{k=0}^\infty a_k(x,\xi)\]
+ where 
+\[\displaystyle  a_0(x,\xi) := \phi(\xi) a(x,\xi) \]
+ and 
+\[\displaystyle  a_k(x,\xi) := (\phi(\xi/2^k) - \phi(\xi/2^{k-1})) a(x,\xi)\]
+ for \({k \geq 1}\). From dominated convergence, implies that 
+\[\displaystyle  a(X,D) f(x) = \sum_{k=0}^\infty a_k(X,D) f(x)\]
+ pointwise for \({f \in {\mathcal S}({\bf R})}\). Thus by Fatou’s lemma, it will suffice to show that 
+\[\displaystyle  \| \sum_{k=0}^K a_k(X,D) f \|_{L^p({\bf R})} \lesssim_{a,p} \|f\|_{L^p({\bf R})}\]
+ uniformly in \({K}\). Observe from Definition \ref{symb} and the Leibniz rule that each \({a_k}\) is supported in the strip \({\{ (x,\xi): \langle \xi \rangle \sim 2^k \}}\) and obeys the derivative estimates 
+\begin{align}\label{akderiv}
+  \frac{\partial^j}{\partial x^j} \frac{\partial^l}{\partial \xi^l} a_k(x,\xi) \lesssim_{a,j,l} 2^{-kl} 
+\end{align}
+ for all \({x,\xi}\).
 
-Indeed, the property of being affine in three directions shows that the quadratic form associated to the Hessian \({\nabla^2 F(x,y)}\) at any given point vanishes at \({(1,0)}\), \({(1,1)}\), and \({(1,-1)}\), and thus must vanish everywhere. In fact the smoothness hypothesis is not necessary; we leave this as an exercise to the interested reader. The same statement turns out to be true if one replaces \({{\bf R}}\) with the cyclic group \({{\bf Z}/p{\bf Z}}\) as long as \({p}\) is odd; this is the key for us to showing that our \({p}\)-adic Sudoku puzzles have an (approximate) two-dimensional affine structure, which on further analysis can then be used to show that it is in fact non-periodic. However, it turns out that the corresponding claim for cyclic groups \({{\bf Z}/q{\bf Z}}\) can fail when \({q}\) is a sufficiently large power of \({2}\)! In fact the general form of functions \({F: ({\bf Z}/q{\bf Z})^2 \rightarrow {\bf Z}/q{\bf Z}}\) that are affine on every horizontal line, diagonal, and anti-diagonal takes the form \[\displaystyle  F(x,y) = Ax + By + C + D \frac{q}{4} y(x-y) \]
- for some integer coefficients \({A,B,C,D}\). This additional “pseudo-affine” term \({D \frac{q}{4} y(x-y)}\) causes some additional technical complications but ultimately turns out to be manageable.
+From \eqref{axd} and Fubini’s theorem we can express \({a_k(X,D)}\) as an integral operator 
+\begin{align}\label{akxd}
+  a_k(X,D) f(x) = \int_{\bf R} K_k(x,y) f(y)\ dy 
+\end{align}
+ for \({f \in \mathcal{S}({\bf R})}\), where the integral kernel \({K_k(x,y)}\) is given by the formula 
+\begin{align}\label{kiwi}
+  K_k(x,y) := \int_{\bf R} a_k(x,\xi) e^{2\pi i (x-y) \xi}\ d\xi. 
+\end{align}
+ We can obtain several estimates on this kernel. Firstly, from the triangle inequality, \eqref{akderiv}, and the support property of \({a_k}\) we have the trivial bound 
+\[\displaystyle  K_k(x,y) \lesssim_a 2^k.\]
+ When \({x \neq y}\), we may integrate by parts repeatedly, gaining factors of \({O(\frac{1}{|x-y|})}\) at the cost of applying a \({\xi}\) derivative to \({a_k(x,\xi)}\) for each such factor, and then if one applies the triangle inequality, \eqref{akderiv}, and support property of \({a_k}\) as before we conclude that 
+\begin{align}\label{k1}
+  K_k(x,y) \lesssim_{a,l} 2^k (2^k |x-y|)^{-l} 
+\end{align}
+ for any \({l \geq 0}\); by combining the estimates, we conclude that 
+\begin{align}\label{k2}
+  K_k(x,y) \lesssim_{a,l} 2^k \langle 2^k |x-y|\rangle^{-l} 
+\end{align}
+ for all \({x,y \in {\bf R}}\) and \({l \geq 0}\). Differentiating \eqref{kiwi} in \({x}\) or \({y}\), and repeating the above arguments, we also obtain the estimates 
+\begin{align}\label{k3}
+  \frac{\partial K_k}{\partial x}(x,y), \frac{\partial K_k}{\partial y}(x,y) \lesssim_{a,l} 2^{2k} \langle 2^k |x-y|\rangle^{-l}. 
+\end{align}
+ Since the function \({x \mapsto 2^k \langle 2^k |x| \rangle^{-2}}\) has an \({L^1}\) norm of \({O(1)}\) for any \({k}\), we now see from \eqref{akxd} and Young’s inequality that 
+\begin{align}\label{akxd-bound}
+  \| a_k(X,D) f\|_{L^p({\bf R})} \lesssim_a \|f\|_{L^p({\bf R})}. 
+\end{align}
+ Thus each component \({a_k(X,D) f}\) of \({\sum_{k=0}^K a_k(X,D) f}\) is under control (so for instance we may now discard the \({k=0}\) term); the difficulty is to sum in \({k}\) without losing any \({K}\)-dependent factors. To do this, we first observe from \eqref{k1}, \eqref{k2} and a routine summation of that the total kernel \({K(x,y) := \sum_{k=0}^K K_k(x,y)}\) (which is the integral kernel for \({\sum_{k=0}^K a_k(X,D)}\)) obeys the pointwise bound 
+\[\displaystyle  K(x,y) \lesssim_a \frac{1}{|x-y|}\]
+ as well as the pointwise derivative bound 
+\[\displaystyle  \frac{\partial K}{\partial x}(x,y), \frac{\partial K}{\partial y}(x,y) \lesssim_{a} \frac{1}{|x-y|^2}.\]
+ These are the usual kernel bounds for one-dimensional Calderón-Zygmund theory. From that theory we conclude that in order to prove the \({L^p}\) estimate \eqref{clp}, it suffices to establish the \({p=2}\) case 
+\begin{align}\label{p2}
+  \| \sum_{k=0}^K a_k(X,D) f\|_{L^2({\bf R})} \lesssim_{a} \|f\|_{L^2({\bf R})}. 
+\end{align}
+ From \eqref{akxd-bound}, we have already established a preliminary bound 
+\[\displaystyle  \| a_k(X,D) f\|_{L^2({\bf R})} \lesssim_{a} \|f\|_{L^2({\bf R})}\]
+ for each \({k}\), but a direct application of the triangle inequality will cost us a \({K}\)-dependent factor, which we cannot afford. To do better, we need some “orthogonality” between the \({a_k(X,D)}\). The intuition here is that each component \({a_k(X,D)}\) only interacts with the portion of \({L^2({\bf R})}\) that corresponds to frequencies \({\xi}\) of magnitude \({\langle \xi \rangle \sim 2^k}\), and that these regions are somehow “orthogonal” to each other. Informally, this suggests that 
+\begin{align}\label{approx}
+  a_k(X,D) \approx P_k a_k(X,D) P_k 
+\end{align}
+ where \({P_k}\) is something like a Littlewood-Paley projection operator to frequencies \({\langle \xi \rangle \sim 2^k}\). If we accepted this heuristic, then we could informally use the Littlewood-Paley inequality (or \({L^2}\) decoupling theory) to calculate 
+\[\displaystyle  \| \sum_{k=0}^K a_k(X,D) f \|_{L^2({\bf R})} \approx \| \sum_{k=0}^K P_k a_k(X,D) P_k f \|_{L^2({\bf R})} \]
+\[\displaystyle  \lessapprox (\sum_{k=0}^K \| a_k(X,D) P_k f \|_{L^2({\bf R})}^2)^{1/2}\]
+\[\displaystyle  \lessapprox (\sum_{k=0}^K \| P_k f \|_{L^2({\bf R})}^2)^{1/2}\]
+\[\displaystyle  \lessapprox \|f\|_{L^2({\bf R})}.\]
+ It is possible to make this approximation \eqref{approx} more precise and establish \eqref{p2}: see Exercise \ref{lp-a}. However, we will take the opportunity to showcase another elegant way to exploit “almost orthogonality”, known as the \href{https://en.wikipedia.org/wiki/Cotlar%E2%80%93Stein_lemma}{Cotlar-Stein lemma}:
+\begin{lemma}[Cotlar-Stein lemma]
+  Let \({T_1,\dots,T_n: H \rightarrow H'}\) be bounded linear maps from one Hilbert space \({H}\) to another \({H'}\). Suppose that the maps \({T_i^* T_j: H \rightarrow H}\) obey the operator norm bounds 
+\begin{align}\label{hi}
+  \sum_{j=1}^n \|T_i^* T_j\|_{op}^{1/2} \leq A 
+\end{align}
+ for all \({i=1,\dots,n}\) and some \({A \geq 0}\), and similarly the maps \({T_i T_j^*: H' \rightarrow H'}\) obey the operator norm bounds 
+\begin{align}\label{lo}
+  \sum_{j=1}^n \|T_i T_j^*\|_{op}^{1/2} \leq B 
+\end{align}
+ for all \({i=1,\dots,n}\) and some \({B \geq 0}\). Then we have 
+\[\displaystyle  \| \sum_{j=1}^n T_j \|_{op} \leq \sqrt{AB}.\]
 
-During the writing process we also discovered that the encoding part of the proof becomes more modular and conceptual once one introduces two new definitions, that of an “expressible property” and a “weakly expressible property”. These concepts are somewhat analogous to that of \({\Pi^0_0}\) sentences and \({\Sigma^0_1}\) sentences in the \href{https://en.wikipedia.org/wiki/Arithmetical_hierarchy}{arithmetic hierarchy}, or to \href{https://en.wikipedia.org/wiki/Algebraic_variety}{algebraic sets} and \href{https://en.wikipedia.org/wiki/Semialgebraic_set}{semi-algebraic sets} in real algebraic geometry. Roughly speaking, an expressible property is a property of a tuple of functions \({f_w: G \rightarrow H_w}\), \({w \in {\mathcal W}}\) from an abelian group \({G}\) to finite abelian groups \({H_w}\), such that the property can be expressed in terms of one or more tiling equations on the graph \[\displaystyle  A := \{ (x, (f_w(x))_{w \in {\mathcal W}} \subset G \times \prod_{w \in {\mathcal W}} H_w.\]
- For instance, the property that two functions \({f,g: {\bf Z} \rightarrow H}\) differ by a constant can be expressed in terms of the tiling equation \[\displaystyle  A \oplus (\{0\} \times H^2) = {\bf Z} \times H^2\]
- (the vertical line test), as well as \[\displaystyle  A \oplus (\{0\} \times \Delta \cup \{1\} \times (H^2 \backslash \Delta)) = G \times H^2,\]
- where \({\Delta = \{ (h,h): h \in H \}}\) is the diagonal subgroup of \({H^2}\). A weakly expressible property \({P}\) is an existential quantification of some expressible property \({P^*}\), so that a tuple of functions \({(f_w)_{w \in W}}\) obeys the property \({P}\) if and only if there exists an extension of this tuple by some additional functions that obey the property \({P^*}\). It turns out that weakly expressible properties are closed under a number of useful operations, and allow us to easily construct quite complicated weakly expressible properties out of a “library” of simple weakly expressible properties, much as a complex computer program can be constructed out of simple library routines. In particular we will be able to “program” our Sudoku puzzle as a weakly expressible property.
+\end{lemma}
 
+Note that if the \({T_i}\) had pairwise orthogonal ranges then \({T_i^* T_j}\) would vanish whenever \({i \neq j}\), and similarly if the \({T_i}\) had pairwise orthogonal coranges then the \({T_i T_j^*}\) would vanish whenever \({i \neq j}\). Thus the hypotheses of the Cotlar-Stein lemma are indeed some quantitative form of “almost orthogonality” of the \({T_i}\).
+
+
+\emph{Proof:}  We use the \({TT^*}\) method (which asserts that for a bounded linear map \({T}\) between Hilbert spaces, the operator norm of \({TT^*}\) or \({T^* T}\) is the square of that of \({T}\) or \({T^*}\)). Applying this method to a single operator \({T_i}\) we have 
+\[\displaystyle  \|T_i\|_{op} = \| T_i^* T_i \|_{op}^{1/2} \leq A \]
+ and similarly 
+\begin{align}\label{opa}
+  \|T_i\|_{op} = \| T_i T_i^* \|_{op}^{1/2} \leq B. 
+\end{align}
+ Taking geometric means we have 
+\begin{align}\label{tia}
+  \|T_i\|_{op} \leq \sqrt{AB}, 
+\end{align}
+ then by the triangle inequality we have \({\|\sum_{j=1}^n T_j \|_{op} \leq n \sqrt{AB}}\). This loses a factor of \({n}\) over the trivial bound. We can reduce this loss to \({\sqrt{n}}\) by a further application of the \({TT^*}\) method as follows. Writing \({T := \sum_{j=1}^n T_j}\), we have 
+\[\displaystyle  \| T \|_{op} = \| TT^* \|_{op}^{1/2} \leq (\sum_{i=1}^n \sum_{j=1}^n \| T_i T_j^* \|_{op})^{1/2} \leq (nB^2)^{1/2}\]
+ and similarly 
+\[\displaystyle  \| T \|_{op} = \| T^*T \|_{op}^{1/2} \leq (\sum_{i=1}^n \sum_{j=1}^n \| T_i^* T_j \|_{op})^{1/2} \leq (nA^2)^{1/2}\]
+ so on taking geometric means we have \({\|T\|_{op} \leq n^{1/2} \sqrt{AB}}\). 
+
+We now reduce the loss in \({n}\) all the way to \({1}\) by iterating the \({TT^*}\) method (this is an instance of a neat trick in analysis, namely the \href{https://terrytao.wordpress.com/2008/08/25/tricks-wiki-article-the-tensor-product-trick/}{tensor power trick}). For any integer \({m}\) that is a power of two, we see from iterating the \({TT^*}\) method that 
+\[\displaystyle  \| T \|_{op} = \| (T^* T)^m \|_{op}^{1/2m}.\]
+ (In fact, this identity holds for any natural number \({m}\), not just powers of two, as can be seen from spectral theory, but powers of two will suffice for the argument here.) We expand out the right-hand side and bound using the triangle inequality by 
+\[\displaystyle  (\sum_{i_1,\dots,i_{2m} = 1,\dots,n} \| T^*_{i_1} T_{i_2} T^*_{i_3} \dots T^*_{i_{2m-1}} T_{i_{2m}} \|_{op})^{1/2m}.\]
+ On the one hand, we can bound the norm \({\| T^*_{i_1} T_{i_2} T^*_{i_3} \dots T^*_{i_{2m-1}} T_{i_{2m}} \|_{op}}\) by 
+\[\displaystyle  \| T^*_{i_1} T_{i_2} \|_{op} \| T^*_{i_3} T_{i_4} \|_{op} \dots \| T^*_{i_{2m-1}} T_{i_{2m}} \|_{op};\]
+ grouping things slightly differently and using \eqref{opa} twice, we can also bound this norm by 
+\[\displaystyle  B \| T_{i_2} T^*_{i_3} \|_{op} \dots \| T_{i_{2m-2}} T^*_{i_{2m-1}} \|_{op} B.\]
+ Taking the geometric mean, we can bound the norm by 
+\[\displaystyle B \| T^*_{i_1} T_{i_2} \|_{op}^{1/2} \| T_{i_2} T^*_{i_3} \|_{op}^{1/2} \dots \| T_{i_{2m-2}} T^*_{i_{2m-1}} \|_{op}^{1/2} \| T^*_{i_{2m-1}} T_{i_{2m}} \|_{op}^{1/2}.\]
+ Summing in \({i_{2m}}\) using \eqref{hi}, then in \({i_{2m-1}}\) using \eqref{lo} and so forth until the \({i_1}\) sum (which is just summed with a loss of \({n}\)), we conclude that 
+\[\displaystyle  \|T\|_{op} \leq (B n A B A \dots B A)^{1/2m} = n^{1/2m} \sqrt{AB}.\]
+ Sending \({m \rightarrow \infty}\), we obtain the claim. \(\Box\)
+\begin{remark}
+  There is a refinement of the Cotlar-Stein lemma for infinite series \({\sum_{i=1}^\infty T_i}\) of operators obeying the hypotheses of the lemma, in which it is shown that the series actually converges in the strong operator topology (though not necessarily in the operator norm topology); this refinement was first observed by Meyer, and can be found for instance \href{https://www.math.tamu.edu/~comech/papers/CotlarStein/CotlarStein.pdf}{in this note of Comech}. 
+\end{remark}
+
+We will shortly establish the bounds 
+\[\displaystyle  \| a_k(X,D) a_j(X,D)^* f\|_{L^2({\bf R})}, \| a_k(X,D)^* a_j(X,D) f\|_{L^2({\bf R})} \]
+\[\displaystyle \lesssim_{a} 2^{-|j-k|} \|f\|_{L^2({\bf R})}\]
+ for any \({j,k \geq 1}\). The claim \eqref{p2} then follows from the Cotlar-Stein lemma (using \eqref{akxd-bound} to dispose of the \({a_0(X,D)}\) term).
+
+ We shall just show that 
+\[\displaystyle  \| a_k(X,D)^* a_j(X,D) f\|_{L^2({\bf R})} \lesssim_{a} 2^{-(j-k)} \|f\|_{L^2({\bf R})};\]
+ when \({j \geq k}\); the \({j < k}\) case is treated similarly, as is the treatment of \({a_k(X,D) a_j(X,D)^*}\) (in fact this latter operator vanishes when \({|j-k| \geq 3}\), though we will not really need this fact). We have 
+\[\displaystyle a_k(X,D)^* a_j(X,D) f(x) = \int_{\bf R} K_{k^*j}(x,z) f(z)\ dz\]
+ where 
+\[\displaystyle  K_{k^*j}(x,z) := \int_{\bf R} \overline{K_k}(y,x) K_j(y,z)\ dy.\]
+ A direct application of \eqref{k2} and the triangle inequality gives the bounds 
+\[\displaystyle K_{k^*j}(x,z) \lesssim_{a} 2^k \langle 2^k(x-z) \rangle^{-10}\]
+ (say), which when combined with Young’s inequality does not give the desired gain of \({2^{-(j-k)}}\). To recover this gain we begin integrating by parts. From \eqref{kiwi} we have 
+\[\displaystyle  K_j(y,z) =\frac{\partial}{\partial y} \int_{\bf R} \frac{a_j(y,\xi)}{2\pi i \xi} e^{2\pi i (y-z) \xi}\ d\xi - \int_{\bf R} \frac{\partial}{\partial y} \frac{a_j(y,\xi)}{2\pi i \xi} e^{2\pi i (y-z) \xi}\ d\xi.\]
+ Note that \({\frac{\partial}{\partial y} \frac{a_j(y,\xi)}{2\pi i \xi}}\) obeys similar estimates to \({a_j(y,\xi)}\) but with an additional gain of \({2^{-j}}\). Thus the contribution of this term to \({K_{k^*j}}\) will be acceptable. The contribution of the other term, after an integration by parts, is 
+\[\displaystyle  -\int_{\bf R} (\frac{\partial}{\partial y} \overline{K_k}(y,x)) \int_{\bf R} \frac{a_j(y,\xi)}{2\pi i \xi} e^{2\pi i (y-z) \xi}\ d\xi\ dy.\]
+ The kernel \({\int_{\bf R} \frac{a_j(y,\xi)}{2\pi i \xi} e^{2\pi i (y-z) \xi}\ d\xi}\) obeys the same bounds as \eqref{k2} but with an additional gain of \({2^{-j}}\); similarly from \eqref{k3} the expression \({\frac{\partial}{\partial y} \overline{K_k}(y,x)}\) obeys the same bounds as \eqref{k2} but with an additional loss of \({2^k}\). The claim follows. This concludes the proof of the Calderón-Vaillancourt theorem.
+\begin{exercise}
+ \label{lp-a} With the hypotheses as above, and with \({P_j}\) a suitable Littlewood-Paley projection to frequencies \({\langle \xi \rangle \sim 2^j}\), establish the \({L^2}\) operator norm bounds 
+\[\displaystyle  \| P_j a_k(X,D) f \|_{L^2({\bf R})}, \| a_k(X,D) P_j f \|_{L^2({\bf R})} \lesssim_a 2^{-|j-k|} \|f\|_{L^2({\bf R})}\]
+ for all \({j,k \geq 0}\) and \({f \in {\mathcal S}({\bf R})}\). Use this to provide an alternate proof of \eqref{p2} that does not require the Cotlar-Stein lemma. 
+\end{exercise}
+
+Now we give a preliminary composition estimate:
+
+\begin{theorem}[Preliminary composition]
+ \label{precomp} Let \({a(X,D)}\) be a pseudodifferential operator of some order \({\alpha \in {\bf R}}\), and let \({b(X,D)}\) be a pseudodifferential operator of some order \({\beta \in {\bf R}}\). Then the composition \({a(X,D) b(X,D)}\) is a pseudodifferential operator of order \({\alpha+\beta}\), thus there exists \({a*b \in {\mathcal S}^{\alpha+\beta}}\) such that \({(a*b)(X,D) = a(X,D) b(X,D)}\) (note from Exercise \ref{unq} that \({a*b}\) is uniquely determined). 
+\end{theorem}
+
+\emph{Proof:}  We begin with some technical reductions in order to justify some later exchanges of integrals. We can express the symbol \({a(x,\xi)}\) as a locally uniform limit of truncated symbols \({a_R(x,\xi) := a(x,\xi) \phi(x/R) \phi(\xi/R)}\) as \({R \rightarrow \infty}\), where \({\phi \in C^\infty_c({\bf R})}\) is a bump function equal to \({1}\) near the origin; from the product rule we see that the symbol estimates \eqref{class-symb} are obeyed by the \({a_R}\) uniformly in \({R}\) as long as \({R \geq 1}\). If \({f}\) is Schwartz, then so is \({b(X,D) f}\), and \({a_R(X,D) b(X,D) f}\) can be verified to converge pointwise to \({a(X,D) b(X,D) f}\). If one can show that \({a_R(X,D) b(X,D) = c_R(X,D)}\) for some pseudodifferential operator \({c_R(X,D)}\) of order \({\alpha+\beta}\), with all the required symbol estimates \eqref{class-symb} on \({c_R}\) obeyed uniformly in \({R}\), then the claim will follow by using the Arzelà-Ascoli theorem to extract a locally uniformly convergent susbequence of the \({c_R}\) and taking a limit. The upshot of this is that we may assume without loss of generality that the symbol \({a(x,\xi)}\) is compactly supported in \({x,\xi}\), so long as our estimates do not depend on the size of this compact support, but only on the constants in the symbol bounds \eqref{class-symb} for \({a}\).
+
+
+Similarly, we may approximate \({b(x,\xi)}\) locally uniformly as the limit of symbols \({b_R(x,\xi)}\) that are compactly supprted in \({x,\xi}\), which makes \({b_R(X,D) f}\) converge locally uniformly to \({b(X,D)}\); from the compact support of \({a(x,\xi)}\) this also shows that \({a(X,D) b_R(X,D) f}\) converges pointwise to \({a(X,D) b(X,D) f}\). From the same limiting argument as before, we may thus assume that \({b}\) is compactly supported in \({x,\xi}\), so long as our estimates do not depend on the size of this support, but only on the constants in the symbol bounds \eqref{class-symb} for \({b}\).
+
+
+For \({f \in {\mathcal S}({\bf R})}\), we have 
+\[\displaystyle  b(X,D) f(y) = \int_{\bf R} b(y,\xi) \hat f(\xi) e^{2\pi i y \xi}\ d\xi\]
+ hence on taking Fourier transforms 
+\[\displaystyle  \widehat{b(X,D) f}(\eta) = \int_{\bf R} \int_{\bf R} b(y,\xi) \hat f(\xi) e^{2\pi i (y \xi- y\eta)}\ d\xi dy\]
+ hence 
+\[\displaystyle  a(X,D) b(X,D) f(x) = \int_{\bf R} \int_{\bf R} \int_{\bf R} a(x,\eta) b(y,\xi) \hat f(\xi) e^{2\pi i (y \xi-y\eta + x \eta)}\ d\xi dy d\eta\]
+ and hence by Fubini’s theorem (and the compact support of \({a,b}\) and the Schwartz nature of \({f}\)) we have \({a(X,D) b(X,D) = (a \ast b)(X,D)}\), where 
+\begin{align}\label{ast-def}
+  (a \ast b)(x,\xi) := \int_{\bf R} \int_{\bf R} a(x,\eta) b(y,\xi) e^{2\pi i (y-x)(\xi-\eta)}\ dy d\eta. 
+\end{align}
+ Our task is now to show that 
+\begin{align}\label{xl}
+  \frac{\partial^j}{\partial x^j} \frac{\partial^l}{\partial \xi^l} (a \ast b)(x,\xi) \lesssim_{a,b,\alpha,\beta,j,l} \langle \xi \rangle^{\alpha+\beta-l}, 
+\end{align}
+ for all \({j,l \geq 0}\) and \({x,\xi \in {\bf R}}\), where the understanding is that the dependence of constants on \({a,b}\) is only through the symbol bounds \eqref{class-symb} for these symbols.
+
+From differentiation under the integral sign and integration by parts we obtain the Leibniz identities 
+\[\displaystyle  \frac{\partial}{\partial x} (a \ast b) = (\frac{\partial}{\partial x} a) \ast b + a \ast (\frac{\partial}{\partial x} b)\]
+ and 
+\[\displaystyle  \frac{\partial}{\partial \xi} (a \ast b) = (\frac{\partial}{\partial \xi} a) \ast b + a \ast (\frac{\partial}{\partial \xi} b).\]
+ From this and an induction on \({j+l}\) (varying \({\alpha,\beta}\) as necessary, noting that if \({\frac{\partial}{\partial x}}\) maps \({{\mathcal S}^\alpha}\) to \({{\mathcal S}^\alpha}\) and \({\frac{\partial}{\partial \xi}}\) maps \({{\mathcal S}^\beta}\) to \({{\mathcal S}^{\beta-1}}\)) we see that to prove \eqref{xl} it suffices to do so in the \({j=l=0}\) case, thus we now only need to show that 
+\begin{align}\label{yo}
+  \int_{\bf R} \int_{\bf R} a(x,\eta) b(y,\xi) e^{2\pi i (y-x)(\xi-\eta)}\ dy d\eta \lesssim_{a,b,\alpha,\beta} \langle \xi \rangle^{\alpha+\beta} 
+\end{align}
+ for a given \({x,\xi}\).
+
+Applying a smooth partition of unity in the \({\eta}\) variable to \({a}\), it suffices to verify the claim in one of two cases: 
+\begin{itemize}
+
+\item \({a(x,\eta)}\) is supported in the region \({\{ (x,\eta): |\eta - \xi| \leq \langle \xi \rangle/2 \}}\) (so in particular \({\langle \eta \rangle \sim \langle \xi \rangle}\)). 
+\item \({a(x,\eta)}\) is supported in the region \({\{ (x,\eta): |\eta - \xi| \geq \langle \xi \rangle/4 \}}\).
+
+
+\end{itemize}
+ (One can verify that applying the required cutoffs to \({a}\) do not significantly worsen the symbol estimates \eqref{class-symb}.) In the former case we write the left-hand side as 
+\[\displaystyle  \int_{\bf R} K_x(x-y) b(y,\xi) e^{2\pi i (y-x)\xi}\ dy\]
+ where 
+\[\displaystyle  K_x(z) := \int_{\bf R} a(x,\eta) e^{2\pi i z \eta}\ d\eta.\]
+ By repeating the proof of \eqref{k1} we have 
+\[\displaystyle  K_x(z) \lesssim_{a,\alpha} \langle \xi \rangle^{\alpha+1} \langle \langle \xi \rangle z \rangle^{-2}\]
+ so from this and the symbol bound \({b(y,\xi) \lesssim_b \langle \xi\rangle^\beta}\) we obtain the claim in this case.
+
+It remains to handle the latter case. Here we integrate by parts repeatedly in the \({y}\) variable to write the left-hand side of \eqref{yo} as 
+\[\displaystyle  \int_{\bf R} \int_{\bf R} \frac{a(x,\eta)}{(2\pi i(\eta-\xi))^m} \frac{\partial^m}{\partial y^m} b(y,\xi) e^{2\pi i (y-x)(\xi-\eta)}\ dy d\eta\]
+ for any \({m}\). Then as before we can rewrite this as 
+\[\displaystyle  \int_{\bf R} K_{x,m}(x-y) \frac{\partial^m}{\partial y^m} b(y,\xi) e^{2\pi i (y-x)\xi}\ dy\]
+ where 
+\[\displaystyle  K_{x,m}(z) := \int_{\bf R} \frac{a(x,\eta)}{(2\pi i(\eta-\xi))^m} e^{2\pi i z \eta}\ d\eta.\]
+ By taking \({m}\) large enough we will eventually recover the bound 
+\[\displaystyle  K_{x,m}(z) \lesssim_{a,\alpha} \langle \xi \rangle^{\alpha+1} \langle \langle \xi \rangle z \rangle^{-2}\]
+ (in fact one can gain arbitrary powers of \({\langle \xi \rangle}\) if desired), and so by repeating the previous arguments we also obtain the claim in this case. \(\Box\)
+
+The above proposition shows that if \({a \in {\mathcal S}^\alpha}\) and \({b \in {\mathcal S}^\beta}\) then \({a \ast b \in {\mathcal S}^{\alpha+\beta}}\). The following exercise gives some refinements to this fact:
+
+\begin{exercise}[Composition of pseudodifferential operators]
+ \label{comp-p} Let \({a \in {\mathcal S}^\alpha}\) and \({b \in {\mathcal S}^\beta}\) for some \({\alpha,\beta \in {\bf R}}\). 
+\begin{itemize}
+
+\item[(i)] Show that \({a \ast b - ab \in {\mathcal S}^{\alpha+\beta-1}}\). (\emph{Hint:} reduce as before to the case where \({a,b}\) are compactly supported, and use the fundamental theorem of calculus to write \({a(x,\eta) = a(x,\xi) + (\eta-\xi) \int_0^1 a_\xi(x, \xi + t(\eta-\xi))\ dt}\), where \({a_\xi(x,\xi) := \frac{\partial a}{\partial \xi}(x,\xi)}\). Then use the Fourier inversion formula, integration by parts, and arguments similar to those used to prove Theorem \ref{precomp}. 
+\item[(ii)] Show that \({a \ast b - ab - \frac{1}{2\pi i} a_\xi b_x \in {\mathcal S}^{\alpha+\beta-2}}\), where \({a_\xi(x,\xi) := \frac{\partial a}{\partial \xi}(x,\xi)}\) and \({b_x(x,\xi) := \frac{\partial b}{\partial x}(x,\xi)}\). (Hint: now apply the fundamental theorem of calculus once more to expand \({a_\xi(x,\xi+t(\eta-\xi))}\).) 
+\item[(iii)] Check (i) and (ii) directly in the classical case when \({a(x,\xi) = A(x) \xi^l}\) and \({b(x,\xi) = B(x) \xi^m}\) for some smooth \({A,B}\) obeying the bounds \eqref{cb} and for \({l,m \geq 0}\). Based on this, for any integer \({r \geq 0}\), make a prediction for an approximation to \({a \ast b}\) as a polynomial combination of the symbols arbitrary \({a \in {\mathcal S}^\alpha, b \in {\mathcal S}^\beta}\) and finitely many of their derivatives which is accurate up to an error in \({{\mathcal S}^{\alpha+\beta-r}}\). Then verify this prediction.
+
+
+\end{itemize}
+
+\end{exercise}
+\begin{remark}
+ \label{ph} From Exercise \ref{comp-p} we see that if \({a(X,D), b(X,D)}\) are pseudodifferential operators of order \({\alpha,\beta}\) respectively, then the commutator \({[a(X,D),b(X,D)]}\) differs from \({\frac{1}{2\pi i} \{a,b\}(X,D)}\) by a pseudodifferential operator of order \({\alpha+\beta-2}\), where \({\{a,b\}}\) is the \href{https://en.wikipedia.org/wiki/Poisson_bracket}{Poisson bracket} 
+\[\displaystyle  \{a,b\}(x,\xi) := \frac{\partial a}{\partial \xi}(x,\xi) \frac{\partial b}{\partial x}(x,\xi) - \frac{\partial a}{\partial x}(x,\xi) \frac{\partial b}{\partial \xi}(x,\xi).\]
+ This approximate correspondence between the Lie bracket \({[,]}\) (which plays a fundamental role in the dynamics of quantum mechanics) and the Poisson bracket \({\{,\}}\) (which plays a fundamental role in the dynamics of classical mechanics) is one of the mathematical foundations of the \href{https://en.wikipedia.org/wiki/Correspondence_principle}{correspondence principle} relating quantum and classical mechanics, but we will not discuss this topic further here. 
+\end{remark}
+
+There is also a companion result regarding adjoints of pseudodifferential operators:
+
+\begin{exercise}[Adjoint of pseudodifferential operator]
+ \label{adj-p} Let \({a \in {\mathcal S}^\alpha}\). 
+\begin{itemize}
+
+\item[(i)] If \({a}\) is compactly supported, show that the function \({\tilde a}\) defined by
+\[\displaystyle  \tilde a(x,\xi) := \int_{\bf R} \int_{\bf R} \overline{a}(y,\eta) e^{2\pi i (x-y)(\eta-\xi)}\ dy d\eta\]
+ is also a symbol of order \({\alpha}\), and that \({\tilde a(X,D)}\) is the adjoint of \({a(X,D)}\) in the sense that 
+\[\displaystyle  \langle a(X,D) f, g \rangle = \langle f, \tilde a(X,D) g \rangle\]
+ for all \({f,g \in {\mathcal S}({\bf R})}\). 
+\item[(ii)] Show that even if \({a}\) is not compactly supported, there is a unique pseudodifferential operator \({a(X,D)^*}\) of order \({\alpha}\) which is the adjoint of \({a(X,D)}\) in the sense that
+\[\displaystyle  \langle a(X,D) f, g \rangle = \langle f, a(X,D)^* g \rangle\]
+ for all \({f,g \in {\mathcal S}({\bf R})}\). 
+\item[(iii)] Show that \({a(X,D)^* - \overline{a}(X,D)}\) is a pseudodifferential operator of order \({\alpha-1}\).
+
+
+\end{itemize}
+
+\end{exercise}
+
+Now we give some applications of the above pseudodifferential calculus.
+
+\begin{exercise}[Pseudodifferential operators and Sobolev spaces]
+ \label{sob} For any \({1 < p < \infty}\) and \({s \in {\bf R}}\), define the \href{https://en.wikipedia.org/wiki/Sobolev_space}{Sobolev space} \({W^{s,p}({\bf R})}\) to be the completion of the Schwartz functions \({{\mathcal S}({\bf R})}\) with respect to the norm 
+\[\displaystyle  \|f\|_{W^{s,p}({\bf R})} := \| \langle D \rangle^s f \|_{L^p({\bf R})}.\]
+\begin{itemize}
+
+\item[(i)] If \({s}\) is a non-negative integer, show that
+\[\displaystyle  \|f\|_{W^{s,p}({\bf R})} \sim_{s,p} \sum_{j=0}^s \| \frac{d^j}{dx^j} f\|_{L^p({\bf R})}\]
+ for any \({f \in {\mathcal S}({\bf R})}\), thus in this case the Sobolev spaces agree (up to constants) with the classical Sobolev spaces (as discussed for instance in \href{https://terrytao.wordpress.com/2009/04/30/245c-notes-4-sobolev-spaces/}{this set of notes}). 
+\item[(ii)] If \({a(X,D)}\) is a pseudodifferential operator of some order \({\alpha \in {\bf R}}\), show that
+\[\displaystyle  \|a(X,D) f\|_{W^{s-\alpha,p}({\bf R})} \lesssim_{a,\alpha,s,p} \|f\|_{W^{s,p}({\bf R})}\]
+ for any \({f \in {\mathcal S}({\bf R})}\), thus \({a(X,D)}\) extends to a bounded linear map from \({W^{s,p}({\bf R})}\) to \({W^{s-\alpha,p}({\bf R})}\). (\emph{Hint:} use Theorem \ref{cv} and Theorem \ref{precomp}). 
+\item[(iii)] Let \({a(X,D)}\) be a pseudodifferential operator of some order \({\alpha \in {\bf R}}\) that obeys the strong ellipticity condition
+\[\displaystyle  \mathrm{Re} a(x,\xi) \sim_a \langle \xi \rangle^\alpha\]
+ for all \({x,\xi \in {\bf R}}\). Establish the \href{https://en.wikipedia.org/wiki/G%C3%A5rding%27s_inequality}{Garding inequality} 
+\[\displaystyle  \mathrm{Re} \langle a(X,D) f, f \rangle \geq c \| f\|_{W^{\alpha/2, 2}({\bf R})}^2 - C \| f \|_{W^{(\alpha-1)/2,2}({\bf R})}^2 \]
+ for all \({f \in {\mathcal S}({\bf R})}\) and some \({c,C>0}\) depending only on \({a,\alpha}\). (\emph{Hint:} use Exercises \ref{comp-p}, \ref{adj-p} to express \({\frac{1}{2} (a(X,D) + a(X,D)^*)}\) as \({b(X,D) b(X,D)^* + e(X,D)}\) for some pseudodifferential operators \({b,e}\) of orders \({\alpha/2}\) and \({\alpha-1}\) respectively.) If \({\alpha \geq 1}\), deduce also the variant inequality 
+\[\displaystyle  \mathrm{Re} \langle a(X,D) f, f \rangle \geq c \| f\|_{W^{\alpha/2, 2}({\bf R})}^2 - C \| f \|_{L^2({\bf R})}^2 \]
+ (possibly with slightly different choices of \({c,C}\)). 
+
+\end{itemize}
+
+\end{exercise}
+
+The behaviour of pseudodifferential operators may be clarified by using a type of phase space transform, which we will call a \emph{Gabor-type transform}.
+
+\begin{exercise}[Gabor-type transforms and pseudodifferential operators]
+ \label{gabor} Given any function \({\phi \in {\mathcal S}({\bf R})}\) with the \({L^2}\) normalisation \({\|\phi\|_{L^2({\bf R})}=1}\), and any \({f \in {\mathcal S}({\bf R})}\), define the \emph{Gabor-type transform} \({T_\phi f: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) by the formula 
+\[\displaystyle  T_\phi f(x,\xi) := \int_{\bf R} f(y) \overline{\phi}(y-x) e^{-2\pi i y \xi}\ dy,\]
+ thus \({T_\phi f(x,\xi)}\) is the inner product of \({f}\) with the function \({y \mapsto \phi(y-x) e^{2\pi i y \xi}}\), which is the “wave packet” formed from function \({\phi}\) by translating by \({x}\) and then modulating by \({\xi}\). (Intuitively, \({T_\phi f(x,\xi)}\) measures the extent to which \({f}\) lives at spatial location \({x}\) and frequency location \({\xi}\).) We also define the adjoint map \({T_\phi^* F: {\bf R} \rightarrow {\bf C}}\) for \({F \in {\mathcal S}({\bf R} \times {\bf R})}\) by the formula 
+\[\displaystyle  T_\phi^* F(y) := \int_{\bf R} \int_{\bf R} F(x,\xi) \phi(y-x) e^{2\pi i y \xi}\ dx d\xi.\]
+\begin{itemize}
+
+\item[(i)] Show that for any \({f \in {\mathcal S}({\bf R})}\), \({T_\phi f}\) is a Schwartz function on \({{\bf R} \times {\bf R}}\), thus \({T_\phi}\) is a linear map from \({{\mathcal S}({\bf R})}\) to \({{\mathcal S}({\bf R} \times {\bf R})}\). Similarly, show that for \({F \in {\mathcal S}({\bf R} \times {\bf R})}\), \({T_\phi^* F}\) is a Schwartz function on \({{\bf R}}\), thus \({T_\phi^*}\) is a linear map from \({{\mathcal S}({\bf R} \times {\bf R})}\) to \({{\mathcal S}({\bf R})}\). 
+\item[(ii)] Establish the identity \({T_\phi^* T_\phi f = f}\) for any \({f \in {\mathcal S}({\bf R})}\), and conclude inparticular that
+\[\displaystyle  \| T_\phi f \|_{L^2({\bf R} \times {\bf R})} = \|f\|_{L^2({\bf R})} \]
+ for any \({f \in {\mathcal S}({\bf R})}\), thus \({T_\phi}\) extends to a linear isometry from \({L^2({\bf R})}\) into \({L^2({\bf R} \times {\bf R})}\). 
+\item[(iii)] For any smooth compactly supported \({a \in C^\infty_c({\bf R})}\) and \({f \in {\mathcal S}({\bf R})}\), establish the identity
+\[\displaystyle  T_\phi^* (a T_\phi f) = (a*W_\phi)(X,D) f,\]
+ where \({W_\phi: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) is the (Kohn-Nirenberg) \href{https://en.wikipedia.org/wiki/Wigner_quasiprobability_distribution}{Wigner distribution} of \({\phi}\), defined by the formula 
+\[\displaystyle  W_\phi(x,\xi) = \phi(x) \overline{\hat \phi}(\xi) e^{-2\pi i x \xi}\]
+ and \({a*W_\phi}\) is the phase space convolution 
+\[\displaystyle  a*W_\phi(x,\xi) := \int_{\bf R} \int_{\bf R} a(y,\eta) W_\phi(x-y, \xi-\eta)\ dy d\eta.\]
+
+
+\end{itemize}
+
+\end{exercise}
+\begin{remark}
+  When \({\phi}\) is a Gaussian, the transform \({T_\phi}\) is essentially the \href{https://en.wikipedia.org/wiki/Gabor_transform}{Gabor transform} (in signal processing) or the \href{https://en.wikipedia.org/wiki/Fourier%E2%80%93Bros%E2%80%93Iagolnitzer_transform}{FBI transform} (in microlocal analysis), and is also closely related to the \href{https://en.wikipedia.org/wiki/Segal%E2%80%93Bargmann_space#The_Segal%E2%80%93Bargmann_transform}{Bargmann transform} in complex analysis. There are some technical advantages with working with Gaussian choices of \({\phi}\), particularly with regards to the treatment of certain lower order terms in the pseudodifferential calculus; see for instance \href{https://math.berkeley.edu/~tataru/papers/phasespace.pdf}{these notes of Tataru}. 
+\end{remark}
+
+Note that \({W_\phi}\) is a Schwartz function on \({{\bf R} \times {\bf R}}\), and by the Fourier inversion formula it has unit mass: \({\int_{\bf R} \int_{\bf R} W_\phi(x,\xi)\ dx d\xi = 1}\). (One also has the marginal distributions \({\int_{\bf R} W_\phi(x,\xi)\ d\xi = |\phi(x)|^2}\) and \({\int_{\bf R} W_\phi(x,\xi)\ dx = |\hat \phi(\xi)|^2}\), so \({W_\phi}\) would be a strong candidate for a “phase space probability distribution” for \({\phi}\), save for the unfortunate fact that \({W_\phi(x,\xi)}\) has no reason to be non-negative. But even with oscillation, \({W_\phi}\) still behaves like an approximation to the identity, so for \({a}\) slowly varying \({a*W_\phi}\) can be viewed as an approximation to \({a}\). Thus, Exercise \ref{gabor}(iii) can be intuitively viewed as saying that \({a(X,D)}\) behaves approximately like a multiplier in phase space: 
+\[\displaystyle  a(X,D) \approx T_\phi^* a T_\phi.\]
+ Another informal way of viewing this assertion is that (for suitable choices of \({\phi}\)) the translated and modulated functions \({y \mapsto \phi(y-x) e^{2\pi i y \xi}}\) can be viewed as approximate eigenfunctions of \({a(X,D)}\) with eigenvalue \({\approx a(x,\xi)}\). This is for instance consistent with the approximate functional calculus \({a(X,D) b(X,D) \approx (ab)(X,D)}\) and \({a(X,D)^* \approx \overline{a}(X,D)}\) that one saw in Exercises \ref{comp-p}, \ref{adj-p}. The exercise below gives another way to view this approximation:
+\begin{exercise}[  bound]
+  Let \({a: {\bf R} \times {\bf R} \rightarrow {\bf C}}\) be a smooth function obeying the “\({S^0_{0,0}}\) bound” 
+\[\displaystyle \frac{\partial^j}{\partial x^j} \frac{\partial^l}{\partial \xi^l} a(x,\xi) \lesssim_{a,j,l} 1\]
+ for all \({j,l \geq 0}\) and \({(x,\xi) \in {\bf R} \times {\bf R}}\). Let \({\phi}\) and \({T_\phi}\) be as in Exercise \ref{gabor}. Show that there is a smooth kernel \({K: {\bf R} \times {\bf R} \times {\bf R} \times {\bf R} \rightarrow {\bf C}}\) obeying the bounds 
+\[\displaystyle  K( x,\xi, y,\eta ) \lesssim_{a,m} \langle (x,\xi) - (y,\eta) \rangle^{-m}\]
+ for any \({m \geq 0}\), such that 
+\[\displaystyle  T_\phi a(X,D) T_\phi^* F(x,\xi) = \int_{{\bf R} \times {\bf R}} K(x,\xi,y,\eta) F(y,\eta)\ dy d\eta\]
+ for any \({F \in {\mathcal S}({\bf R} \times {\bf R})}\). (\emph{Hint:} work first in the case when \({a}\) is compactly supported, where one can use Fubini’s theorem to derive an explicit integral expression for \({K(x,\xi,y,\eta)}\), which one can then control by various integrations by parts.) Use this to establish the \({L^2}\) bound 
+\[\displaystyle  \|a(X,D) f \|_{L^2({\bf R})} \lesssim_a \|f\|_{L^2({\bf R})}\]
+ for any \({f \in {\mathcal S}({\bf R})}\); note that this gives an alternate proof of \eqref{p2}. (See also \href{https://math.berkeley.edu/~tataru/papers/phasespace.pdf}{these notes of Tataru} for further elaboration of this approach to pseudodifferential operators.) 
+\end{exercise}
+
+As a sample application of the Gabor transform formalism we give a variant of the Garding inequality from Exercise \ref{sob}(iii).
+
+\begin{theorem}[Sharp Garding inequality]
+  Let \({a(X,D)}\) be a pseudodifferential operator of order \({\alpha}\) such that \({\mathrm{Re} a(x,\xi) \geq 0}\) for all \({x,\xi}\). Then one has 
+\[\displaystyle  \mathrm{Re} \langle a(X,D) f, f \rangle \geq -C \|f\|_{W^{\alpha-\frac{1}{2},2}}^2\]
+ for all \({f \in {\mathcal S}({\bf R})}\), where \({C}\) depends only on \({a,\alpha}\). 
+\end{theorem}
+
+\emph{Proof:}  From Exercise \ref{adj-p} we see that \({(i \mathrm{Im} a)(X,D) + (i \mathrm{Im} a)(X,D)^*}\) is a pseudodifferential operator of order \({\alpha-1}\), hence by Exercise \ref{sob}(ii) we have 
+\[\displaystyle  \mathrm{Re} \langle (i \mathrm{Im} a)(X,D) f, f \rangle \lesssim_a \|f\|_{W^{\alpha-\frac{1}{2},2}}^2.\]
+ Thus we may remove the imaginary part from \({a}\) and assume that \({a}\) is real and non-negative. Applying a smooth partition of unity of Littlewood-Paley type, we can write \({a = \sum_{k=0}^\infty a_k}\), where each \({a_k}\) is also non-negative, supported on the region \({\{ (x,\xi): \langle \xi \rangle \sim 2^k \}}\), and obeys essentially the same symbol estimates as \({a}\) uniformly in \({k}\). It then suffices to show that 
+\[\displaystyle  \mathrm{Re} \langle \sum_{k=0}^K a_k(X,D) f, f \rangle \geq -C \|f\|_{W^{\alpha-\frac{1}{2},2}}^2\]
+ uniformly in \({K}\). 
+
+We now use the Gabor-type transforms \({T_\phi}\) from Exercise \ref{gabor}, except that we make \({\phi}\) dependent on \({k}\). Specifically we pick a single real even \({\phi_0 \in {\mathcal S}({\bf R})}\) with \({L^2}\) norm \({1}\), then define \({\phi_k(x) := 2^{k/4} \phi(2^{k/2} x)}\) for all \({k>0}\). We will approximate \({a_k(X,D)}\) by 
+\[\displaystyle  (a_k * W_{\phi_k})(X,D) = T_{\phi_k}^* a_k T_{\phi_k}.\]
+ Observe that 
+\[\displaystyle  \langle T_{\phi_k}^* a_k T_{\phi_k} f, f \rangle = \int_{\bf R} \int_{\bf R} a_k(x,\xi) |T_{\phi_k}f(x,\xi)|^2\ dx d\xi \geq 0\]
+ so by the triangle inequality it will suffice to establish the bound 
+\[\displaystyle  \langle \sum_{k=0}^K (a_k - a_k * W_{\phi_k})(X,D) f, f \rangle \lesssim_a \|f\|_{W^{\alpha-\frac{1}{2},2}}^2.\]
+ However, it is not difficult (see exercise below) to show that \({\sum_{k=0}^K a_k - a_k * W_{\phi_k}}\) is a symbol of order \({\alpha-1}\) uniformly in \({K}\), and the claim now follows from Exercise \ref{sob}(ii). \(\Box\)
+\begin{exercise}
+  Verify the claim that \({\sum_{k=0}^K a_k - a_k * W_{\phi_k}}\) is a symbol of order \({\alpha-1}\) uniformly in \({K}\). (Here one will need the fact that \({W_{\phi_k}}\) is a rescaling by a scaling factor \({2^{k/2}}\) of \({W_\phi}\), which is an even Schwartz function of mean \({1}\). The even nature of \({W_\phi}\) is needed to cancel some linear terms which would otherwise only allow one to obtain symbol bounds of order \({\alpha-1/2}\) rather than \({\alpha-1}\).) 
+\end{exercise}
+\begin{remark}
+  It is possible to improve the error term in the sharp Garding inequality, particularly if one uses the Weyl quantization rather than the Kohn-Nirenberg one (see Remark \ref{weyl} below); also the non-negativity hypothesis on \({a}\) can be relaxed in a manner consistent with the uncertainty principle; see \href{https://mathscinet.ams.org/mathscinet-getitem?mr=611747}{this deep paper of Fefferman and Phong}. 
+\end{remark}
+\begin{remark}
+ \label{weyl} Throughout this set of notes we have used the Kohn-Nirenberg quantization 
+\[\displaystyle  a_{KN}(X,D) f(x) = \int_{\bf R} a(x,\xi) \hat f(\xi) e^{2\pi i x \xi}\ d\xi\]
+ or equivalently (taking \({a}\) to be compactly supported for sake of discussion) 
+\[\displaystyle  a_{KN}(X,D) f(x) = \int_{\bf R} (\int_{\bf R} a(x,\xi) e^{2\pi i (x-y) \xi}\ d\xi) f(y) dy.\]
+ However, this is not the only quantization that one could use. For instance, one could also use the adjoint Kohn-Nirenberg quantization 
+\[\displaystyle  a_{KN^*}(X,D) f(x) := \int_{\bf R} (\int_{\bf R} a(y,\xi) e^{2\pi i (x-y) \xi}\ d\xi) f(y) dy\]
+ which one can easily relate to the Kohn-Nirenberg quantization by the identity 
+\[\displaystyle  a_{KN^*}(X,D) = \overline{a}_{KN}(X,D)^*.\]
+ In particular, from Exercise \ref{adj-p} we see that if \({a}\) is a symbol of order \({\alpha}\), then \({a_{KN}(X,D)}\) and \({a_{KN^*}(X,D)}\) only differ by pseudodifferential operators of order \({\alpha-1}\) (and that both quantizations produce the same class of pseudodifferential operators of a given order). The operators \({T_\phi^* a T_\phi}\) appearing earlier can also be viewed as a quantization of \({a}\) (known as the \emph{anti-Wick quantization} of \({a}\) associated to the test function \({\phi}\)). But perhaps the most popular quantization used in the literature is the \href{https://en.wikipedia.org/wiki/Wigner%E2%80%93Weyl_transform}{Weyl quantization} 
+\[\displaystyle  a_{W}(X,D) f(x) := \int_{\bf R} (\int_{\bf R} a(\frac{x+y}{2},\xi) e^{2\pi i (x-y) \xi}\ d\xi) f(y) dy\]
+ which in some sense “splits the difference” between the Kohn-Nirenberg and adjoint Kohn-Nirenberg quantizations, being completely symmetric between the input spatial variable \({y}\) and output spatial variable \({x}\). (Strictly speaking, this formula is only well-defined for say compactly supported symbols \({a}\); for more general symbols \({a}\) one can define \({a_W(X,D) f}\) in the weak sense as the distribution for which 
+\[\displaystyle  \langle a_{W}(X,D) f, g \rangle = \int_{\bf R} (\int_{\bf R} \int_{\bf R} a(\frac{x+y}{2},\xi) e^{2\pi i (x-y) \xi} f(y) \overline{g(x)}\ dx dy)\ d\xi\]
+ for \({f,g \in {\mathcal S}({\bf R})}\) (it is not difficult to use integration by parts to show that the expression in parentheses is rapidly decreasing in \({\xi}\), hence absolutely integrable). In particular there is now no error term in the analogue of Exercise \ref{adj-p}: 
+\[\displaystyle  a_W(X,D)^* = \overline{a}_W(X,D).\]
+ All of the preceding theory for the Kohn-Nirenberg quantization can be adapted to the Weyl quantization with minor changes (for instance, the definition of the Wigner transform \({W_\phi}\) changes slightly, and the operation \({\ast}\) defined in \eqref{ast-def} is replaced with the \href{https://en.wikipedia.org/wiki/Moyal_product}{Moyal product}), and as seen in Exercise \ref{knw} below, the two quantizations again produce the same classes of pseudodifferential operators, with symbols agreeing up to lower order terms. 
+\end{remark}
+\begin{exercise}[Kohn-Nirenberg and Weyl quantizations are equivalent up to lower order]
+ \label{knw} Let \({\alpha}\) be a real number. 
+\begin{itemize}
+
+\item[(i)] If \({a}\) is a symbol of order \({\alpha}\), show that there exists a symbol \({\tilde a}\) of order \({\alpha}\) such that \({a_{KN}(X,D) = \tilde a_W(X,D)}\). Furthermore, show that \({a-\tilde a}\) is a symbol of order \({\alpha-1}\). 
+\item[(ii)] If \({a}\) is a symbol of order \({\alpha}\), show that there exists a symbol \({\tilde a}\) of order \({\alpha}\) such that \({a_{W}(X,D) = \tilde a_{KN}(X,D)}\). Furthermore, show that \({a-\tilde a}\) is a symbol of order \({\alpha-1}\).
+
+
+\end{itemize}
+
+\end{exercise}
+\begin{exercise}[Comparison of quantizations]
+  Let \({j,k \geq 0}\) be natural numbers, and let \({a}\) be the monomial \({a(x,\xi) := x^j \xi^k}\). 
+\begin{itemize}
+
+\item[(i)] Show that \({a_{KN}(X,D) = X^j D^k}\). 
+\item[(ii)] Show that \({a_{KN^*}(X,D) = D^k X^j}\). 
+\item[(iii)] Show that \({a_W(X,D) = \frac{1}{\binom{j+k}{k}} \sum W_1 \dots W_{k+j}}\), where \({(W_1,\dots,W_{k+j})}\) ranges over all tuples of operators consisting of \({j}\) copies of \({X}\) and \({k}\) copies of \({D}\). For instance, if \({(j,k)=(1,2)}\), then
+\[\displaystyle  a_W(X,D) = \frac{1}{3} (XDD + DXD + DDX).\]
+
+
+\end{itemize}
+ Informally, the Kohn-Nirenberg quantization always applies position operators to the left of momentum operators; the adjoint Kohn-Nirenberg quantization always applies position operators to the right of momentum operators; and the Weyl quantization averages equally over all possible orderings. (Taking formal generating functions, we also see (formally, at least) that the quantization of a plane wave \({e^{2\pi i (x \eta + y \xi)}}\) for real numbers \({\eta,y}\) is equal to \({e^{2\pi i \eta X} e^{2\pi i y D}}\) in the Kohn-Nirenberg quantization, \({e^{2\pi i yD} e^{2\pi i \eta X}}\) in the adjoint Kohn-Nirenberg quantization, and \({e^{2\pi i(\eta X + yD)}}\) in the Weyl quantization.) 
+\end{exercise}
+\begin{exercise}[Gabor-type transforms and symmetries]
+  Let \({\phi, f \in {\mathcal S}({\bf R})}\). 
+\begin{itemize}
+
+\item[(i)] (Physical translation) If \({x_0 \in {\bf R}}\) and \({g \in {\mathcal S}({\bf R})}\) is the function \({g(x) := f(x-x_0)}\), show that \({T_\phi g(x,\xi) = e^{-2\pi i x_0 \xi} T_\phi f(x-x_0,\xi)}\) for all \({(x,\xi) \in {\bf R} \times {\bf R}}\). 
+\item[(ii)] (Frequency modulation) If \({\xi_0 \in {\bf R}}\) and \({g \in {\mathcal S}({\bf R})}\) is the function \({g(x) := e^{2\pi i \xi_0 x} f(x)}\), show that \({T_\phi g(x,\xi) = T_\phi f(x,\xi-\xi_0)}\) for all \({(x,\xi) \in {\bf R} \times {\bf R}}\). 
+\item[(iii)] (Dilation) If \({\lambda>0}\) and \({g \in {\mathcal S}({\bf R})}\) is the function \({g(x) := \lambda^{-1/2} f(\lambda^{-1} x)}\), show that \({T_{\phi_\lambda}g(x,\xi) = T_\phi f(\lambda^{-1} x, \lambda \xi)}\) for all \({(x,\xi) \in {\bf R} \times {\bf R}}\), where \({\phi_\lambda := \lambda^{-1/2} \phi(\lambda^{-1} x)}\). 
+\item[(iv)] (Fourier transform) If \({g = \hat f}\), show that \({T_{\hat \phi} g(x,\xi) = e^{2\pi i x \xi} T_\phi f(-\xi, x)}\). 
+\item[(v)] (Quadratic phase modulation) If \({a \in {\bf R}}\) and \({g \in {\mathcal S}({\bf R})}\) is the function \({g(x) := e^{\pi i a x^2} f(x)}\), show that \({T_{\tilde \phi} g(x,\xi) = e^{-\pi i ax^2} T_\phi f(x, \xi-ax)}\) for all \({(x,\xi) \in {\bf R} \times {\bf R}}\), where \({\tilde \phi(x) := e^{\pi i ax^2} \phi(x)}\).
+
+
+\end{itemize}
+ We remark that the group generated by the transformations (i)-(v) is the (Weil representation of the) \href{https://en.wikipedia.org/wiki/Metaplectic_group}{metaplectic group} \({Mp_2}\). 
+\end{exercise}
+\begin{remark}
+  Ignoring the changes in the Gabor test function \({\phi}\), as well as the various phases appearing on the right-hand side, we conclude from the above exercise that basic transformations on functions seem to correspond to various area-preserving maps of phase space; for instance, the Fourier transform is associated to the rotation \({(-\xi,x) \mapsto (x,\xi)}\), which is consistent in particular with the fact that a fourfold iteration of the Fourier transform yields the identity operator. This is in fact a quite general phenomenon, with something asymptotically resembling such identities available for an important class of operators known as \href{https://en.wikipedia.org/wiki/Fourier_integral_operator}{Fourier integral operators} (but in higher dimensions one replaces the adjective with “area-preserving” with “\href{https://en.wikipedia.org/wiki/Symplectomorphism}{symplectomorphism}” or “\href{https://en.wikipedia.org/wiki/Canonical_transformation}{canonical transformation}“). However, as stated previously, the systematic development of the theory of Fourier integral operators is beyond the scope of this course. 
+\end{remark}
+\begin{remark}
+  Virtually all of the above theory extends to higher dimensions, and also to general smooth manifolds \({M}\) as domains. In the latter case, the natural analogue of phase space is the cotangent bundle \({T^* M}\), and the symplectic geometry of this bundle then plays a fundamental role in the theory (as already hinted at by the appearance of the Poisson bracket in Remark \ref{ph}. See for instance \href{https://mathscinet.ams.org/mathscinet-getitem?mr=983366}{this text of Folland for more discussion}. 
+\end{remark}
  \end{document}
