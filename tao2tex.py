@@ -9,13 +9,14 @@ https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/
 At the moment, this is hard-coded to work only for Tao's blogposts.
 
 naming conventions:
-    a formatter function returns a string, while
-    a wrapper function calls soup_processor or child_processor and returns a list of strings.
+    a formatter function returns a string, 
+    a wrapper function calls soup_processor or child_processor somewhere and returns a list of strings.
 """
 
 
 import re  # https://regexkit.com/python-regex
 
+import requests
 from bs4 import (
     BeautifulSoup,
     FeatureNotFound,
@@ -30,7 +31,8 @@ from bs4 import (
 # print(r.text)
 # soup = BeautifulSoup(response)
 
-DEFAULT_HTML = "test2.html"
+DEFAULT_HTML1 = "test1.html"
+DEFAULT_HTML2 = "test2.html"
 
 
 def soup_maker(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
@@ -84,22 +86,14 @@ def display_math_formatter(
 def labelled_display_math_formatter(
     text: str, label: str, env_type: str = "align"
 ) -> str:
+    """Formats labelled display math"""
     # the equation number was hard-coded into the math by LaTeX2WP. So we need to remove it
     extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
     if number_match := extra_eqno_matcher.match(text):
         text = number_match.group(1)
-    return (
-        r"\begin{"
-        + env_type
-        + "}"
-        + label_formatter(label)
-        + "\n"
-        + text
-        + "\n"
-        + r"\end{"
-        + env_type
-        + "}"
-    )
+        left_delim = r"\begin{" + env_type + "}" + label_formatter(label) + "\n"
+        right_delim = "\n" + r"\end{" + env_type + "}"
+    return math_formatter(text, left_delim, right_delim)
 
 
 def section_formatter(text: str) -> str:
@@ -177,9 +171,51 @@ def string_formatter(text: str) -> str:
     return text
 
 
+def ol_wrapper(soup: BeautifulSoup) -> list[str]:
+    """turns ol tags into enumerates"""
+    return environment_wrapper("enumerate", soup)
+
+
+def ul_wrapper(soup: BeautifulSoup) -> list[str]:
+    """turns ul tags into itemizes"""
+    return environment_wrapper("itemize", soup)
+
+
+def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
+    """adds an item command before continuing to process the soup"""
+    bullet_option = ""
+    if (
+        find_bullet
+        and len(soup.contents) > 0
+        and (first_child := soup.contents[0])
+        and isinstance(first_child, NavigableString)
+    ):
+        first_child = str(first_child.extract())
+        bullet_matcher = re.compile(r"(?:[\(\[]?\w\w?\w?[\)\]\:.])|[\*->]")
+        #  see  https://regexkit.com/python-regex,
+        # matches common bullet or numberings
+        # eg: "1.", "(2)", "[3]", "4)", "(v)", ">". ,"*", and "."
+        # Doesn't match 1, because it will then match e.g "Therefore,".
+        # only matches ≤3 chars in label to avoid (Diffusion)
+        # Doesn't match Eg. 1, Eg. 2, Eg. 3.
+
+        if bullet_match := bullet_matcher.match(first_child):
+            bullet_option = "[" + bullet_match.group() + "]"
+            first_child = bullet_matcher.sub("", first_child, count=1)
+
+        return [r"\item" + bullet_option, first_child] + soup_processor(soup)
+    # fallback
+    print(f"using fallback in li_wrapper for {soup=}")
+    return [r"\item"] + soup_processor(soup)
+
+
 def child_processor(child: PageElement) -> list[str]:
-    """Turns a child element into a list of legal LaTeX strings.
-    We return a list instead of a single string to enable recursion."""
+    """The meat of this script. Turns a child element into a list of legal LaTeX strings.
+    We return a list instead of a single string to enable some recursion.
+    Code is arranged to attempt to split
+        - detecting the required LaTeX commands (which happens here)
+        - how the command should be typed (formatters and wrappers)
+    """
     if isinstance(child, NavigableString):
         return [string_formatter(child.get_text())]
     elif child.name == "em":
@@ -203,7 +239,7 @@ def child_processor(child: PageElement) -> list[str]:
     elif child.name == "img" and "alt" in child.attrs.keys():
         return [math_formatter(child["alt"])]
     elif child.name == "img":
-        # TODO: save images and appropriately format
+        # TODO: save images and appropriately format. NB add graphicx package
         return ["\n unknown image found \n"]
     elif child.name == "a" and "href" in child.attrs.keys():
         return [ahref_formatter(child["href"], child.get_text())]
@@ -227,6 +263,7 @@ def child_processor(child: PageElement) -> list[str]:
             second_uncle.insert(0, child)
             return []
         # fallback
+        print(f"using fallback in child_processor for a {child.name} tag")
         return [label_formatter(child.attrs["name"])]
     elif child.name == "blockquote":
         if child.b:
@@ -242,6 +279,12 @@ def child_processor(child: PageElement) -> list[str]:
         return theorem_wrapper(unprocessed_thm_name, child)
     elif child.name == "p":
         return soup_processor(child)
+    elif child.name == "ul":
+        return ul_wrapper(child)
+    elif child.name == "ol":
+        return ol_wrapper(child)
+    elif child.name == "li":
+        return li_wrapper(child)
     elif (
         child.name == "div"
         and ("class" in child.attrs.keys() and child.attrs["class"][0] == "sharedaddy")
@@ -249,7 +292,7 @@ def child_processor(child: PageElement) -> list[str]:
     ):
         return []
     else:
-        # TODO: ordered and unordered lists?
+        # fallback to get_text
         return [child.get_text()]
 
 
@@ -281,21 +324,21 @@ def preamble_formatter(template_filename: str, author: str, title: str) -> str:
 
 
 def main():
-    """Goes through a saved HTML version of a blogpost and spits out a LaTeX version"""
-
+    """Goes through a HTML version of a blogpost and spits out a LaTeX version"""
+    url = DEFAULT_HTML1
     tao2tex_signature = (
         r"Automatically generated using \texttt{tao2tex.py} from "
-        + ahref_formatter(DEFAULT_HTML)
+        + ahref_formatter(url)
         + "."
     )
 
     header_strainer = SoupStrainer("div", id="header")
-    header_soup = soup_maker(DEFAULT_HTML, header_strainer)
+    header_soup = soup_maker(url, header_strainer)
     blog_title = header_soup.find(id="blog-title").get_text()
     blog_tagline = header_soup.find(id="tagline").get_text()
 
     primary_strainer = SoupStrainer("div", id="primary")
-    primary_soup = soup_maker(DEFAULT_HTML, primary_strainer)
+    primary_soup = soup_maker(url, primary_strainer)
     title = primary_soup.h1.get_text()
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
     metadata_as_string = "".join(metadata)
@@ -328,8 +371,10 @@ def main():
 
     # TODO: also parse the comments: potentially has bad tex
     # TODO: what about "" into ``''? then '' into `'? and {\bf} into \mathbf{}?
-    # TODO: convert &nbsp; to '~' (which is precisely a nonbreaking space in LaTeX)
     # TODO: allow user to fetch from the internet
+    # TODO: allow batch processing
+    # TODO: make preamble fancier
+    # TODO: for speed reasons perhaps move all regexes into main
 
 
 if __name__ == "__main__":
