@@ -1,5 +1,4 @@
-out.txt
-out.tex
-test2_pretty
-debugger.txt
+*.tex
+*.txt
 html_prettyprinter.py
+.DS_Store
