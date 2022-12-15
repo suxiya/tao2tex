@@ -2,13 +2,13 @@
 tao2tex.py
 by Calvin Khor
 
-Goes through a saved HTML version of one of Tao's blogposts, and spits out a LaTeX version
+Goes through a saved HTML version of a wordpress math blogpost, and spits out a LaTeX version
 
 A partial inverse for LaTeX2WP which can be found here:
 https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/
 This will work perfectly only for Tao's newer blogposts.
 
-naming conventions: (NB if this gets more complicated, abstract into a class)
+naming conventions:
     a formatter function returns a string,
     a wrapper function calls soup_processor or child_processor somewhere
     and returns a list of strings.
@@ -43,7 +43,7 @@ def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
 
 
 def download_file(url: str) -> bool:
-    """downloads a file at url; returns true iff successful"""
+    """downloads a file at url; returns true if successful"""
     url_simplifier = re.compile(r"(.*?)\?")
     if can_be_simplified := url_simplifier.search(url):
         url = can_be_simplified.group(1)
@@ -83,12 +83,14 @@ def macro(
     return "\\" + macro_command + "{" + macro_input + "}"
 
 
-def image_formatter(url: str, width: str, height: str) -> str:
-    """formats image with name=url using the inclduegraphics macro"""
-    filename_from_url = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
-    if filename_match := filename_from_url.match(url):
+def image_formatter(path: str, width: str, height: str) -> str:
+    """formats an image at path using the includegraphics macro.
+    (So, the preamble needs to include the graphicx package.)
+    We assume pictures are at "150 dpi" (dots per inch)"""
+    filename_from_path = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
+    if filename_match := filename_from_path.match(path):
         filename = filename_match.group(1)
-        # we assume pictures are at "150 dpi" (dots per inch)
+
         options = []
         width = int(width) / 150  # now in inches
         options.append(f"{width=} " + "in")
@@ -98,7 +100,8 @@ def image_formatter(url: str, width: str, height: str) -> str:
 
 
 def placeholder_formatter(width, height):
-    """formats a stock image using the inclduegraphics macro"""
+    """formats the default stock image using the includegraphics macro"""
+    # we assume pictures are at "150 dpi" (dots per inch)
     options = []
     width = int(width) / 150  # now in inches
     options.append(f"{width=} " + "in")
@@ -155,7 +158,7 @@ def display_math_formatter(
 
 
 def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> str:
-    """Formats labelled display math
+    """Formats labelled display math. On Tao's blogs,
     the equation number is hard-coded in. So we need to remove it"""
     extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
     if number_match := extra_eqno_matcher.match(text):
@@ -166,8 +169,9 @@ def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> s
 
 
 def section_formatter(text: str) -> str:
-    """formats a section header using the section LaTeX macro
-    implementations are probably highly different across blogs so we just hardcode tao's in."""
+    """formats a section header using the section LaTeX macro.
+    implementations are probably highly different across blogs so we just hardcode Tao's in:
+    this means we search for and remove leading numbers."""
     section_matcher = re.compile(r"[a-zA-Z,]+")
     if section_match := section_matcher.findall(text):
         text = string_formatter(" ".join(section_match))
@@ -219,13 +223,14 @@ def theorem_wrapper(unprocessed_thm_title: str, soup: BeautifulSoup) -> list[str
     return environment_wrapper(theoremtype, soup, options)
 
 
-def label_formatter(tag: str) -> str:
+def label_formatter(label: str) -> str:
     "formats a label as a LaTeX command"
-    return macro("label", tag)
+    return macro("label", label)
 
 
 def string_formatter(text: str, remove_newlines: bool = False) -> str:
-    """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages)."""
+    """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages).
+    Hence this should not be called in math_formatter and related functions."""
 
     # there must be better syntax for the below...
     unusual_whitespace = (
@@ -242,7 +247,7 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
     substitutions = [
         ("[" + unusual_whitespace + "]+", " "),
         (r"{", r"TTT-TEMPVAR💩🫠🫥1"),  # temporarily change {s and }s
-        (r"}", r"TTT-TEMPVAR💩🫠🫥2"),  # to distinguish from replacements below
+        (r"}", r"TTT-TEMPVAR💩🫠🫥2"),  # to distinguish from those in replacements below
         (r"\\", r"\\textbackslash{}"),  # needs to come before next 3
         ("\\^", r"\\textasciicircum{}"),
         ("\\~", r"\\textasciitilde{}"),
@@ -270,7 +275,8 @@ def ul_wrapper(soup: BeautifulSoup) -> list[str]:
 
 
 def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
-    """adds an item command before continuing to process the soup"""
+    """adds an item command before continuing to process the soup.
+    Attempts to detect if a custom bullet was manually typed and use that instead."""
     bullet_option = ""
     if (
         find_bullet
@@ -298,10 +304,10 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
 
 def child_processor(child: PageElement) -> list[str]:
     """Turns a child element into a list of legal LaTeX strings.
-    We return a list instead of a single string to enable some recursion.
+    We return a list instead of a single string to enable something like mild recursion.
     Unfortunately this is all just heuristics.
     Code is arranged to attempt to split
-        - detecting what LaTeX commands are required (which happens here)
+        - detecting what and where LaTeX commands are required (which happens here)
         - how the command should be typed (formatters and wrappers)
     """
     if isinstance(child, NavigableString):
@@ -458,6 +464,13 @@ def preamble_formatter(
     # I don't really have a good way to arrange the variables below
     # so if you want to change this, you need to change it three times
     # twice below and in the preamble
+    dict_of_vars = {
+        "BLOG-TITLE": blog_title,
+        "TAGLINE": tagline,
+        "TITLE": title,
+        "METADATA": metadata,
+        "SIGNATURE": signature,
+    }
     template_vars = ["BLOG-TITLE", "TAGLINE", "TITLE", "METADATA", "SIGNATURE"]
     python_vars = [blog_title, tagline, title, metadata, signature]
     with open(template_filename, "r", encoding="UTF-8") as template:
