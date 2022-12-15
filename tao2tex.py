@@ -104,8 +104,8 @@ def placeholder_formatter(width, height):
 
 
 def ahref_formatter(href: str, text: str = "") -> str:
-    """turns a href with a text into the corresponding LaTeX code.
-    If no text is given, then the href is used instead."""
+    """turns a href with only text into the corresponding LaTeX code.
+    If no text is given, then the href is used as text."""
     url_matcher = re.compile(r"(http|www).*")  # http or www, followed by anything
     ref_matcher = re.compile(r"[0-9]+")  # at least one number
     eqref_matcher = re.compile(r"\([0-9]+\)")  # at least one number in round brackets
@@ -122,7 +122,7 @@ def ahref_formatter(href: str, text: str = "") -> str:
 
 
 def ahref_wrapper(href, soup: BeautifulSoup) -> list[str]:
-    "figures out how to format hrefs"
+    "figures out how to format soups that are wrapped by an a tag"
     soup_out = soup_processor(soup)
     # special case for images
     if len(soup.contents) == 1 and soup.contents[0].name == "img":
@@ -168,16 +168,6 @@ def section_formatter(text: str) -> str:
     if section_match := section_matcher.findall(text):
         text = string_formatter(" ".join(section_match))
     return macro("section", text)
-
-
-def author_formatter(text: str) -> str:
-    """formats an author"""
-    return macro("author", string_formatter(text))
-
-
-def title_formatter(text: str) -> str:
-    """formats a title"""
-    return macro("title", string_formatter(text))
 
 
 def environment_formatter(env_type: str, text: str, options: list[str] = None) -> str:
@@ -280,11 +270,6 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
 def ol_wrapper(soup: BeautifulSoup) -> list[str]:
     """turns ol tags into enumerates"""
     return environment_wrapper("enumerate", soup)
-
-
-def ul_formatter(text: str) -> str:
-    """turns ul tags into itemizes"""
-    return environment_formatter("itemize", text)
 
 
 def ul_wrapper(soup: BeautifulSoup) -> list[str]:
