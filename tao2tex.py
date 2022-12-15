@@ -14,6 +14,8 @@ naming conventions: (NB if this gets more complicated, abstract into a class)
     and returns a list of strings.
 """
 import argparse
+import datetime
+import os
 import re  # https://regexkit.com/python-regex
 
 import requests
@@ -24,7 +26,6 @@ from bs4 import (
     PageElement,
     SoupStrainer,
 )
-from requests.exceptions import ConnectTimeout
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -41,9 +42,65 @@ def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
     return soup
 
 
-def add_to_download_queue(url: str):
-    # TODO: figure out how to queue downloads and then download it
-    return
+def download_file(url: str) -> bool:
+    """downloads a file at url; returns true iff successful"""
+    filename_from_url = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
+    filename = url
+    if filename_match := filename_from_url.match(url):
+        filename = filename_match.group(1)
+
+    if os.path.exists(url):
+        return True
+    try:
+        raw_data = requests.get(url, timeout=TIMEOUT_IN_SECONDS)
+    except requests.exceptions.ConnectionError:
+        print(f"failed to download from {url=}")
+        return False
+    with open(filename, "wb") as file:
+        file.write(raw_data)
+        return True
+
+
+def macro(
+    macro_command: str, macro_input: str = "", macro_options: list[str] = None
+) -> str:
+    """simple command to print basic latex macros"""
+    if macro_options:
+        return (
+            "\\"
+            + macro_command
+            + "{"
+            + macro_input
+            + "}"
+            + "["
+            + ",".join(macro_options)
+            + "]"
+        )
+    return "\\" + macro_command + "{" + macro_input + "}"
+
+
+def image_formatter(url: str, width: str, height: str) -> str:
+    """formats image with name=url using the inclduegraphics macro"""
+    filename_from_url = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
+    if filename_match := filename_from_url.match(url):
+        filename = filename_match.group(1)
+        # we assume pictures are at "150 dpi" (dots per inch)
+        options = []
+        width = int(width) / 150  # now in inches
+        options.append(f"{width=} " + "in")
+        height = int(height) / 150  # now in inches
+        options.append(f"{height=} " + "in")
+        return macro("includegraphics", filename, options)
+
+
+def placeholder_formatter(width, height):
+    """formats a stock image using the inclduegraphics macro"""
+    options = []
+    width = int(width) / 150  # now in inches
+    options.append(f"{width=} " + "in")
+    height = int(height) / 150  # now in inches
+    options.append(f"{height=} " + "in")
+    return macro("includegraphics", "example-image", options)
 
 
 def ahref_formatter(href: str, text: str = "") -> str:
@@ -57,23 +114,25 @@ def ahref_formatter(href: str, text: str = "") -> str:
             text = href
         return r"\href{" + href + "}{" + text + "}"
     elif href[0] == "#" and ref_matcher.match(text):
-        return r"\ref{" + href[1:] + "}"
+        return macro("ref", href[1:])
     elif href[0] == "#" and eqref_matcher.match(text):
-        return r"\eqref{" + href[1:] + "}"
+        return macro("eqref", href[1:])
     else:
         return href
 
 
 def ahref_wrapper(href, soup: BeautifulSoup) -> list[str]:
     "figures out how to format hrefs"
-    # TODO: this and the formatter should ideally be just one function
     soup_out = soup_processor(soup)
+    # special case for images
+    if len(soup.contents) == 1 and soup.contents[0].name == "img":
+        return environment_formatter("center", ahref_formatter(href, "".join(soup_out)))
     return [ahref_formatter(href, "".join(soup_out))]
 
 
 def em_wrapper(soup: BeautifulSoup) -> list[str]:
     """formats a soup inside an <em> tag with the emph LaTeX macro."""
-    return [r"\emph{"] + soup_processor(soup) + ["}"]
+    return [macro("emph", "".join(soup_processor(soup)))]
 
 
 def math_formatter(text: str, left_delim: str = r"\(", right_delim: str = r"\)") -> str:
@@ -84,7 +143,7 @@ def math_formatter(text: str, left_delim: str = r"\(", right_delim: str = r"\)")
 def display_math_formatter(
     text: str, left_delim: str = r"\[", right_delim: str = r"\]"
 ) -> str:
-    """adds display math delimiters"""
+    """adds display math delimiters, and removes \\displaystyle if present"""
     displaystyle_matcher = re.compile(r"(?:\\displaystyle)? *(.*)")
     if displaystyle_match := displaystyle_matcher.match(text):
         text = displaystyle_match.group(1)
@@ -92,8 +151,8 @@ def display_math_formatter(
 
 
 def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> str:
-    """Formats labelled display math"""
-    # the equation number was hard-coded into the math by LaTeX2WP. So we need to remove it
+    """Formats labelled display math
+    the equation number is hard-coded in. So we need to remove it"""
     extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
     if number_match := extra_eqno_matcher.match(text):
         text = number_match.group(1)
@@ -103,31 +162,37 @@ def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> s
 
 
 def section_formatter(text: str) -> str:
-    """formats a section header using the section LaTeX macro"""
+    """formats a section header using the section LaTeX macro
+    implementations are probably highly different across blogs so we just hardcode tao's in."""
     section_matcher = re.compile(r"[a-zA-Z,]+")
     if section_match := section_matcher.findall(text):
-        text = " ".join(section_match)
-    return r"\section{" + text + "}"
+        text = string_formatter(" ".join(section_match))
+    return macro("section", text)
 
 
 def author_formatter(text: str) -> str:
     """formats an author"""
-    return r"\author{" + text + "}"
+    return macro("author", string_formatter(text))
 
 
 def title_formatter(text: str) -> str:
     """formats a title"""
-    return r"\title{" + text + "}"
+    return macro("title", string_formatter(text))
+
+
+def environment_formatter(env_type: str, text: str, options: list[str] = None) -> str:
+    """wraps text in an environment"""
+    return macro("begin", env_type, options) + text + macro("end", env_type)
 
 
 def environment_wrapper(
-    env_type: str, soup: BeautifulSoup, options: str = ""
+    env_type: str, soup: BeautifulSoup, options: list[str] = None
 ) -> list[str]:
     """processes and wraps a soup in an environment"""
     return (
-        [r"\begin{" + env_type + "}" + options]
-        + soup_processor(soup)
-        + [r"\end{" + env_type + "}"]
+        macro("begin", env_type, options)
+        + "".join(soup_processor(soup))
+        + macro("end", env_type)
     )
 
 
@@ -151,22 +216,24 @@ def theorem_wrapper(unprocessed_thm_title: str, soup: BeautifulSoup) -> list[str
             ):
                 theoremtype = title
 
-    options = ""
+    options = []
     options_matcher = re.compile(
         r"\((.*)?\)"
     )  # look for a pair of brackets in unprocessed_thm_title
     if options_match := re.search(options_matcher, unprocessed_thm_title):
-        options = "[" + options_match.group(1) + "]"
+        options = [options_match.group(1)]
     return environment_wrapper(theoremtype, soup, options)
 
 
 def label_formatter(tag: str) -> str:
     "formats a label as a LaTeX command"
-    return r"\label{" + tag + "}"
+    return macro("label", tag)
 
 
 def string_formatter(text: str, remove_newlines: bool = False) -> str:
     """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages)."""
+
+    # there must be better syntax for the below...
     unusual_whitespace = (
         "\t\u0009\u00A0\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
         + "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009"
@@ -178,21 +245,46 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
     if remove_newlines:
         unusual_whitespace += "\n"
     unusual_whitespace_matcher = re.compile("[" + unusual_whitespace + "]+")
-
     text = re.sub(unusual_whitespace_matcher, " ", text)
-    latex_escaper = re.compile(r"[\\_^%&*{}@]")
-    latex_subst = "\\\0"
-    text = re.sub(latex_escaper, latex_subst, text)
-    # pipes need special escaping
+    # TODO: redo with a dict which will be slightly neater
+    temp_escaper = re.compile(r"{")
+    temp_subst = r"TTT-TEMPVAR💩🫠🫥1"
+    text = re.sub(temp_escaper, temp_subst, text)
+    temp_escaper2 = re.compile(r"}")
+    temp_subst2 = r"TTT-TEMPVAR💩🫠🫥2"
+    text = re.sub(temp_escaper2, temp_subst2, text)
     pipe_escaper = re.compile(r"\|")
-    pipe_subst = r"\\textbar"
+    pipe_subst = r"\\textbar{}"
     text = re.sub(pipe_escaper, pipe_subst, text)
+    backslash_escaper = re.compile(r"\\")
+    backslash_subst = r"\\textbackslash{}"
+    text = re.sub(backslash_escaper, backslash_subst, text)
+    caret_escaper = re.compile("\\^")
+    caret_subst = r"\\textasciicircum{}"
+    text = re.sub(caret_escaper, caret_subst, text)
+    tilde_escaper = re.compile("\\~")
+    tilde_subst = r"\\textasciitilde{}"
+    text = re.sub(tilde_escaper, tilde_subst, text)
+    latex_escaper = re.compile(r"[$%&\_]")
+    latex_subst = r"\\\g<0>"
+    text = re.sub(latex_escaper, latex_subst, text)
+    untemp_escaper = re.compile(r"TTT-TEMPVAR💩🫠🫥1")
+    untemp_subst = r"\{"
+    text = re.sub(untemp_escaper, untemp_subst, text)
+    untemp_escaper2 = re.compile(r"TTT-TEMPVAR💩🫠🫥2")
+    untemp_subst2 = r"\}"
+    text = re.sub(untemp_escaper2, untemp_subst2, text)
     return text
 
 
 def ol_wrapper(soup: BeautifulSoup) -> list[str]:
     """turns ol tags into enumerates"""
     return environment_wrapper("enumerate", soup)
+
+
+def ul_formatter(text: str) -> str:
+    """turns ul tags into itemizes"""
+    return environment_formatter("itemize", text)
 
 
 def ul_wrapper(soup: BeautifulSoup) -> list[str]:
@@ -224,12 +316,11 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
 
         return [r"\item " + bullet_option, first_child] + soup_processor(soup)
     # fallback
-    print(f"using fallback in li_wrapper for {soup=}")
     return [r"\item "] + soup_processor(soup)
 
 
 def child_processor(child: PageElement) -> list[str]:
-    """The meat of this script. Turns a child element into a list of legal LaTeX strings.
+    """Turns a child element into a list of legal LaTeX strings.
     We return a list instead of a single string to enable some recursion.
     Unfortunately this is all just heuristics.
     Code is arranged to attempt to split
@@ -242,6 +333,9 @@ def child_processor(child: PageElement) -> list[str]:
     elif child.name == "em" or child.name == "i":
         return em_wrapper(child)
 
+    elif child.name == "br":
+        return ["\n"]
+
     elif child.name == "p" and (
         "align" in child.attrs.keys()
         or ("style" in child.attrs.keys() and "text-align:center;" in child["style"])
@@ -251,7 +345,7 @@ def child_processor(child: PageElement) -> list[str]:
             if isinstance(grandchild, NavigableString):
                 extra_string += grandchild.get_text()
         if extra_string != "":
-            extra_string = r"\quad" + extra_string
+            extra_string = r"\qquad" + extra_string
         if (
             child.contents[0].name == "img"
             and "alt" in child.contents[0].attrs.keys()
@@ -288,19 +382,17 @@ def child_processor(child: PageElement) -> list[str]:
     ):
         return [math_formatter(child["alt"])]
     elif child.name == "img":
-        # if 'src' in child.attrs.keys():
-        # TODO: save images and appropriately format.
-        # attempt to figure out dimensions
-        if (
-            "src" in child.attrs.keys()
-            and "width" in child.attrs.keys()
-            and "height" in child.attrs.keys()
-        ):
-            src, width, height = child["src"], child["width"], child["height"]
-            add_to_download_queue(src)
+        if "src" in child.attrs.keys():
+            src = child["src"]
+            if "width" in child.attrs.keys() and "height" in child.attrs.keys():
+                width = child["width"]
+                height = child["height"]
+                if download_file(src):
+                    return [image_formatter(src, width, height)]
+                return [placeholder_formatter(width, height)]
 
-            print(f"img tag with {src=},{width=},{height=}")
-        return [f"\n img tag with no src attr: {child=} \n"]
+        print(f"img tag with no src attr: {child=}")
+        return []
 
     elif child.name == "a" and "href" in child.attrs.keys():
         for grandchild in child.children:
@@ -374,21 +466,130 @@ def soup_processor(soup: BeautifulSoup) -> list[str]:
     return out
 
 
-def preamble_formatter(template_filename: str, author: str, title: str) -> str:
+def preamble_formatter(
+    template_filename: str,
+    blog_title: str,
+    tagline: str,
+    title: str,
+    metadata: str,
+    signature: str,
+) -> str:
     """spit out a preamble as a long string, using the template"""
-
     # if you don't escape the slahes, the regex will not work
     slash_escaper = re.compile(r"\\")
-    author = slash_escaper.sub(r"\\\\", author)
-    title = slash_escaper.sub(r"\\\\", title)
 
+    # I don't really have a good way to arrange the variables below
+    # so if you want to change this, you need to change it three times
+    # twice below and in the preamble
+    template_vars = ["BLOG-TITLE", "TAGLINE", "TITLE", "METADATA", "SIGNATURE"]
+    python_vars = [blog_title, tagline, title, metadata, signature]
     with open(template_filename, "r", encoding="UTF-8") as template:
         out = template.read()
-        author_matcher = re.compile(r"TTT-AUTHOR")
-        out = author_matcher.sub(author, out)
-        title_matcher = re.compile(r"TTT-TITLE")
-        out = title_matcher.sub(title, out)
+        for i, var in enumerate(template_vars):
+            python_vars[i] = slash_escaper.sub(r"\\\\", python_vars[i])
+            var_matcher = re.compile("TTT-" + var)
+            out = var_matcher.sub(python_vars[i], out)
         return out
+
+
+def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
+    """Converts the soup into a comments section,
+    with a helper function comments_section_processor1 which deals with
+    organizing the comments themselves.
+
+    This helper calls comment_processor which formats a signle comment."""
+    comments_title = "no title"
+    comments = [macro("begin", "itemize")]
+    for child in comments_soup.children:
+        # pull out section title and call comment_processor
+        if (
+            child.name == "div"
+            and "id" in child.attrs.keys()
+            and child["id"] == "comments-meta"
+        ):
+            for gchild in child.children:
+                if isinstance(gchild, NavigableString):
+                    comments.append(string_formatter(str(gchild)))
+                elif (
+                    "class" in gchild.attrs.keys()
+                    and "comments-title" in gchild["class"]
+                ):
+                    comments_title = macro(
+                        "section*", string_formatter(gchild.get_text())
+                    )
+
+        else:
+            comments.extend(comments_section_processor1(child))
+
+    return [comments_title] + comments + [macro("end", "itemize")]
+
+
+def comments_section_processor1(child: BeautifulSoup, depth: int = 0) -> list[str]:
+    """helper function to allow nested comments (i.e. replies) via recursion.
+    Actual formatting of comments is done in another helper, comment_processor"""
+    comments = []
+    if (
+        child.name == "div"
+        and "class" in child.attrs.keys()
+        and "comment" in child.attrs["class"]
+    ):
+        comments.append(comment_processor(child))
+    elif child.name == "ul":
+        # print(f"{depth=}")
+        if depth < 3:
+            comments.append(macro("begin", "itemize"))
+        for gchild in child.children:
+            comments.extend(comments_section_processor1(gchild, depth + 1))
+        if depth < 3:
+            comments.append(macro("end", "itemize"))
+    return comments
+
+
+def comment_processor(soup: BeautifulSoup) -> list[str]:
+    """get for each comment: author name, date, and the comment string.
+    The first string in the output is the timestamp.
+    The second string is  the author name.
+    The remainder is the comment string.
+    """
+    timestamp = "unknown"
+    author = "unknown"
+    comment = []
+    for child in soup.children:
+        if isinstance(child, NavigableString):
+            continue
+        if "class" in child.attrs.keys() and "comment-metadata" in child.attrs["class"]:
+            for gchild in child.children:
+                if isinstance(gchild, NavigableString):
+                    continue
+                if (
+                    "class" in gchild.attrs.keys()
+                    and "comment-author" in gchild.attrs["class"]
+                ):
+                    # TODO: need to avoid emoji names....
+                    # worry about that later
+                    author = string_formatter(gchild.get_text())
+                elif (
+                    "class" in gchild.attrs.keys()
+                    and "comment-permalink" in gchild.attrs["class"]
+                ):
+                    timestamp = string_formatter(gchild.get_text())
+
+        elif (
+            "class" in child.attrs.keys() and "comment-content" in child.attrs["class"]
+        ):
+            for gchild in child.children:
+                if isinstance(gchild, NavigableString):
+                    continue
+                if gchild.name == "img":
+                    continue  # Let's not process the avatars.
+                comment += child_processor(gchild)
+    return (
+        macro("item", "")
+        + macro("textbf", author + macro("hfill", "") + timestamp)
+        + r"\\"
+        + "".join(comment)
+        + "\n"
+    )
 
 
 def url2tex(url: str, local: bool, output):
@@ -400,10 +601,9 @@ def url2tex(url: str, local: bool, output):
     else:
         raw_html = requests.get(url, timeout=TIMEOUT_IN_SECONDS).text
 
-    tao2tex_signature = (
-        "Automatically generated from "
-        + ahref_formatter(url)
-        + r" using \texttt{tao2tex.py}."
+    signature = (
+        r"Automatically generated  using \texttt{tao2tex.py} "
+        + f"from {ahref_formatter(url)} at {datetime.datetime.now()}"
     )
 
     header_strainer = SoupStrainer("div", id="header")
@@ -411,7 +611,7 @@ def url2tex(url: str, local: bool, output):
     blog_title = string_formatter(
         header_soup.find(id="blog-title").get_text(), remove_newlines=True
     )
-    blog_tagline = string_formatter(
+    tagline = string_formatter(
         header_soup.find(id="tagline").get_text(), remove_newlines=True
     )
 
@@ -419,28 +619,26 @@ def url2tex(url: str, local: bool, output):
     primary_soup = html2soup(raw_html, primary_strainer)
     title = string_formatter(primary_soup.h1.get_text(), remove_newlines=True)
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
-    metadata_as_string = "".join(metadata)
+    metadata = "".join(metadata)
 
+    comment_strainer = SoupStrainer("div", id="comments")
+    comment_soup = html2soup(raw_html, comment_strainer)
     preamble = preamble_formatter(
         template_filename="preamble.tex",
-        author="",
-        title=r"{\normalsize "
-        + blog_title
-        + r"\\"
-        + blog_tagline
-        + r"}\\"
-        + title
-        + r"\footnote{"
-        + tao2tex_signature
-        + r"}\\ \footnotesize "
-        + metadata_as_string,
+        blog_title=blog_title,
+        tagline=tagline,
+        title=title,
+        metadata=metadata,
+        signature=signature,
     )
 
     content = primary_soup.find(attrs={"class": "post-content"})
+    comments = comment_soup.find(attrs={"id": "comments"})
 
     out = (
         [preamble, r"\begin{document}", r"\maketitle"]
         + soup_processor(content)
+        + comments_section_processor(comments)
         + [r"\end{document}"]
     )
     if not output:
@@ -470,23 +668,14 @@ def main():
                 numbered_name = None
                 if args.output:
                     numbered_name = args.output + str(i)
-                try:
                     url2tex(filename, args.local, numbered_name)
-                except FileNotFoundError:
-                    print(f"file no. {i}, {filename=} not found. Skipping")
-                except ConnectTimeout:
-                    print(f"url no. {i}, {filename=} timed out. Skipping")
     else:
         url2tex(args.url, args.local, args.output)
 
-    # TODO: also parse the comments: potentially has bad tex
-    # TODO: test batch processing
     # TODO: test timeouts and requests handling
-    # TODO: make preamble fancier
-    # TODO: add more fallbacks e.g. title finding
-    # so that some sort of output is generated for other blogs
-    # TODO: figure out how to state the required imports that don't
-    # come with python (requests, bs4, lxml)
+    # TODO: add more fallbacks e.g. title finding so that some sort of output is generated for other blogs
+    # TODO: test batch processing
+    # TODO: figure out how to state the required imports that don't  come with python (requests, bs4, lxml)
 
 
 if __name__ == "__main__":

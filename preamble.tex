@@ -6,6 +6,7 @@
 \usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage{microtype}
+\usepackage{xcolor}
 
 % THEOREMS -------------------------------------------------------
 	\newtheorem{theorem}{Theorem}
@@ -21,6 +22,14 @@
 	\newtheorem{remark}[theorem]{Remark}
 	\newtheorem{note}[theorem]{Note}
 
+\makeatletter         
+\renewcommand\maketitle{
+\noindent {\Large TTT-BLOG-TITLE}\\
+\textcolor{gray}{TTT-TAGLINE}
+{\begin{center}
+{\Huge \bfseries\sffamily  \@title }
+\end{center}}
+{\noindent\footnotesize TTT-METADATA\\
+TTT-SIGNATURE\\ \hrule  \vspace{4ex}}}
+\makeatother
 \title{TTT-TITLE}
-\author{TTT-AUTHOR}
-\date{Last compiled: \today}
