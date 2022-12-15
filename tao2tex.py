@@ -44,12 +44,16 @@ def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
 
 def download_file(url: str) -> bool:
     """downloads a file at url; returns true iff successful"""
+    url_simplifier = re.compile(r"(.*?)\?")
+    if can_be_simplified := url_simplifier.search(url):
+        url = can_be_simplified.group(1)
     filename_from_url = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
     filename = url
     if filename_match := filename_from_url.match(url):
         filename = filename_match.group(1)
 
     if os.path.exists(url):
+        # avoid redownloading files
         return True
     try:
         raw_data = requests.get(url, timeout=TIMEOUT_IN_SECONDS)
@@ -57,7 +61,7 @@ def download_file(url: str) -> bool:
         print(f"failed to download from {url=}")
         return False
     with open(filename, "wb") as file:
-        file.write(raw_data)
+        file.write(raw_data.content)
         return True
 
 
@@ -188,7 +192,7 @@ def environment_wrapper(
 
 def theorem_wrapper(unprocessed_thm_title: str, soup: BeautifulSoup) -> list[str]:
     """formats a blockquote into a theorem/conjecture/etc environment"""
-    theoremtype = "unknown"
+    theoremtype = "note"  # randomly defaulting to "note" to avoid latex errors
     title_matcher = re.compile(r"([a-zA-z]*) ")  # first word in unprocessed_thm_title
     if title_match := re.search(title_matcher, unprocessed_thm_title):
         match title := title_match.group(1).lower():
@@ -234,36 +238,24 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
     )
     if remove_newlines:
         unusual_whitespace += "\n"
-    unusual_whitespace_matcher = re.compile("[" + unusual_whitespace + "]+")
-    text = re.sub(unusual_whitespace_matcher, " ", text)
-    # TODO: redo with a dict which will be slightly neater
-    temp_escaper = re.compile(r"{")
-    temp_subst = r"TTT-TEMPVAR💩🫠🫥1"
-    text = re.sub(temp_escaper, temp_subst, text)
-    temp_escaper2 = re.compile(r"}")
-    temp_subst2 = r"TTT-TEMPVAR💩🫠🫥2"
-    text = re.sub(temp_escaper2, temp_subst2, text)
-    pipe_escaper = re.compile(r"\|")
-    pipe_subst = r"\\textbar{}"
-    text = re.sub(pipe_escaper, pipe_subst, text)
-    backslash_escaper = re.compile(r"\\")
-    backslash_subst = r"\\textbackslash{}"
-    text = re.sub(backslash_escaper, backslash_subst, text)
-    caret_escaper = re.compile("\\^")
-    caret_subst = r"\\textasciicircum{}"
-    text = re.sub(caret_escaper, caret_subst, text)
-    tilde_escaper = re.compile("\\~")
-    tilde_subst = r"\\textasciitilde{}"
-    text = re.sub(tilde_escaper, tilde_subst, text)
-    latex_escaper = re.compile(r"[$%&\_]")
-    latex_subst = r"\\\g<0>"
-    text = re.sub(latex_escaper, latex_subst, text)
-    untemp_escaper = re.compile(r"TTT-TEMPVAR💩🫠🫥1")
-    untemp_subst = r"\{"
-    text = re.sub(untemp_escaper, untemp_subst, text)
-    untemp_escaper2 = re.compile(r"TTT-TEMPVAR💩🫠🫥2")
-    untemp_subst2 = r"\}"
-    text = re.sub(untemp_escaper2, untemp_subst2, text)
+
+    substitutions = [
+        ("[" + unusual_whitespace + "]+", " "),
+        (r"{", r"TTT-TEMPVAR💩🫠🫥1"),  # temporarily change {s and }s
+        (r"}", r"TTT-TEMPVAR💩🫠🫥2"),  # to distinguish from replacements below
+        (r"\\", r"\\textbackslash{}"),  # needs to come before next 3
+        ("\\^", r"\\textasciicircum{}"),
+        ("\\~", r"\\textasciitilde{}"),
+        (r"\|", r"\\textbar{}"),
+        (r"[$%&\_]", r"\\\g<0>"),  # \g<0> means the 0th matched group
+        (r"TTT-TEMPVAR💩🫠🫥1", r"\{"),
+        (r"TTT-TEMPVAR💩🫠🫥2", r"\}"),
+    ]
+
+    for (before, after) in substitutions:
+        regex = re.compile(before)
+        text = re.sub(regex, after, text)
+
     return text
 
 
@@ -357,7 +349,7 @@ def child_processor(child: PageElement) -> list[str]:
         else:
             # fallback processing.
             print('fallback to basic processing in p align="..." tag')
-            print(f"{child=}"[:50])
+            print(f"{child=}"[:150])
             return soup_processor(child)
     elif (
         child.name == "img"
@@ -417,7 +409,7 @@ def child_processor(child: PageElement) -> list[str]:
             )  # NB extract() removes the tag so that it is not processed twice.
         else:
             print("unknown theorem: falling back to theorem")
-            print(f"{child=}"[:50])
+            print(f"{child=}"[:150])
             unprocessed_thm_name = "theorem"
         return theorem_wrapper(unprocessed_thm_name, child)
     elif child.name == "p":
@@ -428,16 +420,16 @@ def child_processor(child: PageElement) -> list[str]:
         return ol_wrapper(child)
     elif child.name == "li":
         return li_wrapper(child)
-    elif (
-        child.name == "div"
-        and ("class" in child.attrs.keys() and child.attrs["class"][0] == "sharedaddy")
-        or ("id" in child.attrs.keys() and child.attrs["id"][0] == "jp-post-flair")
+    elif child.name == "div" and (
+        ("class" in child.attrs.keys() and "sharedaddy" in child.attrs["class"][0])
+        or ("class" in child.attrs.keys() and "cs-rating" in child.attrs["class"])
+        or ("id" in child.attrs.keys() and "jp-post-flair" in child.attrs["id"])
     ):
         return []
     else:
         # fallback to get_text
         print("unknown tag:")
-        print(f"{child=}"[:50])
+        print(f"{child=}"[:150])
         return [child.get_text()]
 
 
