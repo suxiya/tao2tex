@@ -464,21 +464,19 @@ def preamble_formatter(
     # I don't really have a good way to arrange the variables below
     # so if you want to change this, you need to change it three times
     # twice below and in the preamble
-    dict_of_vars = {
+    template_vars = {
         "BLOG-TITLE": blog_title,
         "TAGLINE": tagline,
         "TITLE": title,
         "METADATA": metadata,
         "SIGNATURE": signature,
     }
-    template_vars = ["BLOG-TITLE", "TAGLINE", "TITLE", "METADATA", "SIGNATURE"]
-    python_vars = [blog_title, tagline, title, metadata, signature]
     with open(template_filename, "r", encoding="UTF-8") as template:
         out = template.read()
-        for i, var in enumerate(template_vars):
-            python_vars[i] = slash_escaper.sub(r"\\\\", python_vars[i])
+        for var in template_vars:
+            template_vars[var] = slash_escaper.sub(r"\\\\", template_vars[var])
             var_matcher = re.compile("TTT-" + var)
-            out = var_matcher.sub(python_vars[i], out)
+            out = var_matcher.sub(template_vars[var], out)
         return out
 
 
@@ -487,7 +485,7 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
     with a helper function comments_section_processor1 which deals with
     organizing the comments themselves.
 
-    This helper calls comment_processor which formats a signle comment."""
+    This helper calls comment_processor which formats a single comment."""
     comments_title = "no title"
     comments = [macro("begin", "itemize")]
     for child in comments_soup.children:
@@ -592,8 +590,11 @@ def url2tex(url: str, local: bool, output):
         raw_html = requests.get(url, timeout=TIMEOUT_IN_SECONDS).text
 
     signature = (
-        r"Automatically generated  using \texttt{tao2tex.py} "
-        + f"from {ahref_formatter(url)} at {datetime.datetime.now()}"
+        r"Automatically generated  using "
+        + ahref_formatter(
+            "https://github.com/clvnkhr/tao2tex", macro("texttt", "tao2tex.py")
+        )
+        + f" from {ahref_formatter(url)} at {datetime.datetime.now()}"
     )
 
     header_strainer = SoupStrainer("div", id="header")

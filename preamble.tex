@@ -1,27 +1,43 @@
 \documentclass[11pt]{article}
-\usepackage{amsmath,amssymb,amsthm}
-\usepackage[colorlinks = true,
-			citecolor = blue,
-			linkcolor = blue]{hyperref}
+\usepackage{amsmath,amssymb}
+
+\usepackage{amsthm}
+%%% below are simple theorems that use amsthm only
+%	\newtheorem{theorem}{Theorem}
+%	\newtheorem{corollary}[theorem]{Corollary}
+%	\newtheorem{lemma}[theorem]{Lemma}
+%	\newtheorem{proposition}[theorem]{Proposition}
+%	\newtheorem{conjecture}[theorem]{Conjecture}
+%\theoremstyle{definition}
+%	\newtheorem{definition}[theorem]{Definition}
+%	\newtheorem{example}[theorem]{Example}
+%	\newtheorem{exercise}[theorem]{Exercise}
+% \theoremstyle{remark}
+%	\newtheorem{remark}[theorem]{Remark}
+%	\newtheorem{note}[theorem]{Note}
+\usepackage[framemethod=tikz]{mdframed}
+\mdfdefinestyle{tao}{outerlinewidth = 1,roundcorner=2pt,innertopmargin=0}
+	\newmdtheoremenv[style=tao]{theorem}{Theorem}
+	\newmdtheoremenv[style=tao]{corollary}[theorem]{Corollary}
+	\newmdtheoremenv[style=tao]{lemma}[theorem]{Lemma}
+	\newmdtheoremenv[style=tao]{proposition}[theorem]{Proposition}
+	\newmdtheoremenv[style=tao]{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+	\newmdtheoremenv[style=tao]{definition}[theorem]{Definition}
+	\newmdtheoremenv[style=tao]{example}[theorem]{Example}
+	\newmdtheoremenv[style=tao]{exercise}[theorem]{Exercise}
+% \theoremstyle{remark}
+	\newmdtheoremenv[style=tao]{remark}[theorem]{Remark}
+	\newtheorem{note}[theorem]{Note}
 \usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage{microtype}
 \usepackage{xcolor}
-
-% THEOREMS -------------------------------------------------------
-	\newtheorem{theorem}{Theorem}
-	\newtheorem{corollary}[theorem]{Corollary}
-	\newtheorem{lemma}[theorem]{Lemma}
-	\newtheorem{proposition}[theorem]{Proposition}
-	\newtheorem{conjecture}[theorem]{Conjecture}
-\theoremstyle{definition}
-	\newtheorem{definition}[theorem]{Definition}
-	\newtheorem{example}[theorem]{Example}
-	\newtheorem{exercise}[theorem]{Exercise}
-% \theoremstyle{remark}
-	\newtheorem{remark}[theorem]{Remark}
-	\newtheorem{note}[theorem]{Note}
-
+\usepackage[T1]{fontenc}
+\usepackage[colorlinks = true,
+			citecolor = blue,
+			urlcolor = blue,
+			linkcolor = blue]{hyperref}
 \makeatletter         
 \renewcommand\maketitle{
 \noindent {\Large TTT-BLOG-TITLE}\\
