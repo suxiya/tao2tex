@@ -116,16 +116,17 @@ def ahref_formatter(href: str, text: str = "") -> str:
     url_matcher = re.compile(r"(http|www).*")  # http or www, followed by anything
     ref_matcher = re.compile(r"[0-9]+")  # at least one number
     eqref_matcher = re.compile(r"\([0-9]+\)")  # at least one number in round brackets
+
     if url_matcher.match(href):
         if text == "":
             text = href
-        return r"\href{" + href + "}{" + text + "}"
+        return r"\href{" + string_formatter(href) + "}{" + string_formatter(text) + "}"
     elif href[0] == "#" and ref_matcher.match(text):
-        return macro("ref", href[1:])
+        return macro("ref", string_formatter(href[1:]))
     elif href[0] == "#" and eqref_matcher.match(text):
-        return macro("eqref", href[1:])
+        return macro("eqref", string_formatter(href[1:]))
     else:
-        return href
+        return string_formatter(href)
 
 
 def ahref_wrapper(href, soup: BeautifulSoup) -> list[str]:
@@ -285,7 +286,7 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
         and isinstance(first_child, NavigableString)
     ):
         first_child = str(first_child.extract())
-        bullet_matcher = re.compile(r"(?:[\(\[]?[0-9]?\w?\w[\)\]\:.])|[\*->]")
+        bullet_matcher = re.compile(r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*->]")
         #  see  https://regexkit.com/python-regex,
         # matches common bullet or numberings
         # eg: "1.", "(2)", "[3]", "4)", "(v)", ">". ,"*", and "."
@@ -310,6 +311,9 @@ def child_processor(child: PageElement) -> list[str]:
         - detecting what and where LaTeX commands are required (which happens here)
         - how the command should be typed (formatters and wrappers)
     """
+    if not child:
+        print("empty child in child_processor")
+        return []
     if isinstance(child, NavigableString):
         return [string_formatter(child.get_text())]
 
@@ -384,14 +388,26 @@ def child_processor(child: PageElement) -> list[str]:
             ):
                 return ahref_wrapper(child["href"], child)
         return [ahref_formatter(child["href"], child.get_text())]
-    elif (
-        child.name == "a" and "name" in child.attrs.keys() and len(child.contents) == 0
-    ):
+    elif child.name == "a" and "name" in child.attrs.keys():
         # In LaTeX, labels need to appear inside of the environment it labels.
         # We move this into the heuristically determined correct environment and defer processing
         # this until processing <p align="..."> tags.
         # if this ever breaks, good luck whoever wants to debug this in the future...
-        if (
+        if child.contents:
+            for gchild in child.contents:
+                print(f"{gchild=}")
+                if (
+                    isinstance(gchild, NavigableString)
+                    and gchild.get_text().strip() == ""
+                ):
+                    continue
+                if gchild.name == "p" and gchild.contents[0].name == "img":
+                    return [
+                        labelled_math_formatter(
+                            gchild.contents[0]["alt"], child["name"]
+                        )
+                    ]
+        elif (
             (parent := child.parent)
             and parent.name == "p"
             and "align" not in parent.attrs.keys()
@@ -443,6 +459,9 @@ def soup_processor(soup: BeautifulSoup) -> list[str]:
     """A simple loop on child_processor that converts a BeautifulSoup
     into a list of legal LaTeX strings."""
     out = []
+    if not soup:
+        print("empty soup in soup_processor")
+        return out
     for child in soup.children:
         out.extend(child_processor(child))
 
@@ -486,7 +505,7 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
     organizing the comments themselves.
 
     This helper calls comment_processor which formats a single comment."""
-    comments_title = "no title"
+    comments_title = " no title "
     comments = [macro("begin", "itemize")]
     for child in comments_soup.children:
         # pull out section title and call comment_processor
@@ -553,8 +572,6 @@ def comment_processor(soup: BeautifulSoup) -> list[str]:
                     "class" in gchild.attrs.keys()
                     and "comment-author" in gchild.attrs["class"]
                 ):
-                    # TODO: need to avoid emoji names....
-                    # worry about that later
                     author = string_formatter(gchild.get_text())
                 elif (
                     "class" in gchild.attrs.keys()
@@ -598,17 +615,30 @@ def url2tex(url: str, local: bool, output):
     )
 
     header_strainer = SoupStrainer("div", id="header")
+    blog_title = "Blog Title Goes Here"
     header_soup = html2soup(raw_html, header_strainer)
-    blog_title = string_formatter(
-        header_soup.find(id="blog-title").get_text(), remove_newlines=True
-    )
-    tagline = string_formatter(
-        header_soup.find(id="tagline").get_text(), remove_newlines=True
-    )
+    if may_have_title := header_soup.find(id="blog-title"):
+        blog_title = string_formatter(may_have_title.get_text(), remove_newlines=True)
+    elif may_have_title := header_soup.find(id="title"):
+        blog_title = string_formatter(may_have_title.get_text(), remove_newlines=True)
+    else:
+        blog_title = soup_processor(header_soup)
+
+    tagline = "Blog Tagline Goes Here"
+    if may_have_tagline := header_soup.find(id="tagline"):
+        tagline = string_formatter(may_have_tagline.get_text(), remove_newlines=True)
 
     primary_strainer = SoupStrainer("div", id="primary")
     primary_soup = html2soup(raw_html, primary_strainer)
-    title = string_formatter(primary_soup.h1.get_text(), remove_newlines=True)
+
+    title = "Post Title Goes Here"
+    if may_be_post_title := primary_soup.h1:
+        title = string_formatter(may_be_post_title.get_text(), remove_newlines=True)
+    elif may_be_post_title := primary_soup.find("title"):
+        title = string_formatter(may_be_post_title.get_text(), remove_newlines=True)
+    else:
+        title = blog_title
+
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
     metadata = "".join(metadata)
 
@@ -624,7 +654,12 @@ def url2tex(url: str, local: bool, output):
     )
 
     content = primary_soup.find(attrs={"class": "post-content"})
+    if not content:
+        content = primary_soup.find(attrs={"class": "content"})
+
     comments = comment_soup.find(attrs={"id": "comments"})
+    if not comments:
+        comments = comment_soup.find(attrs={"id": "commentslist"})
 
     out = (
         [preamble, r"\begin{document}", r"\maketitle"]
@@ -663,10 +698,8 @@ def main():
     else:
         url2tex(args.url, args.local, args.output)
 
-    # TODO: test timeouts and requests handling
-    # TODO: add more fallbacks e.g. title finding so that some sort of output is generated for other blogs
     # TODO: test batch processing
-    # TODO: figure out how to state the required imports that don't  come with python (requests, bs4, lxml)
+    # TODO: process tables
 
 
 if __name__ == "__main__":

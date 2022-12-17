@@ -1,4 +1,4 @@
 *.tex
-*.txt
+*.html
 html_prettyprinter.py
 .DS_Store
