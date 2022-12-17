@@ -2,7 +2,7 @@
 #### Video Demo: TODO
 
 ## Description
-Goes through the HTML of a wordpress math blogpost using a combination of regexes and BeautifulSoup, and spits out a $`\LaTeX`$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
+Goes through the HTML of a wordpress math blogpost using a combination of regexes and BeautifulSoup, and spits out a $\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
 
 ## Requirements and Installation
 You need reasonably up-to-date installations of Python 3 and LaTeX (to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
@@ -13,12 +13,12 @@ You need reasonably up-to-date installations of Python 3 and LaTeX (to compile t
 ## Usage
 
  1. clone the repo
- 2. Go to [Terry’s blog](terrytao.wordpress.com) and find a post you want to convert to $`\LaTeX`$.
+ 2. Go to [Terry’s blog](terrytao.wordpress.com) and find a post you want to convert to $\LaTeX$.
 
 2. Copy the URL. 
 3. `cd` to the repo and run `python3 URL`. 
 4. Wait a few seconds and a `.tex` file will be produced.
-5. Run the `.tex` file in your favourite $`\LaTeX`$ program to create a finished PDF.
+5. Run the `.tex` file in your favourite $\LaTeX$ program to create a finished PDF.
 
 For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/ `. 
 
@@ -39,9 +39,6 @@ There are a number of keywords in the preamble; they are in all-caps and begin w
 
  - We did not implement logging properly, instead comments are directly printed to the command line.
  
- - We did not attempt to deal with Emoji; $`\LaTeX`$ is unable to render these without help (e.g. the `emoji` package in LuaTeX, and even this requires processing e.g. 😂 into `\emoji{face_with_tears_of_joy}`. This processing can be easily added, as python has easy to use emoji packages, but we opted to not treat this edgecase and add to the requirements. 
+ - We did not attempt to deal with Emoji; $`\LaTeX`$ is unable to render these without help (e.g. the [`emoji`](https://www.ctan.org/pkg/emoji) package with LuaTeX, and even this requires processing e.g. 😂 into `\emoji{face_with_tears_of_joy}`.) This processing can be easily added, as python has easy to use emoji packages, but we opted to not treat this edgecase and add to the requirements. 
 
- - Most likely, modification is needed to work with other blogs, even those that are on wordpress, like https://mathproblems123.wordpress.com/. Despite looking quite similar, the precise way that the tags are laid out are different. 
-
-
-Beijing
+ - Most likely, modification of the BeautifulSoup part is needed to work with other blogs, even those that are on wordpress. Despite looking quite similar, the precise way that the tags are laid out seem to be different. 
