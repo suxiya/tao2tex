@@ -24,7 +24,7 @@ For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-
 
 tao2tex also supports a local mode, and a batch mode:
  - For local mode, save the html of the page and then use the name of the file in place of the url, with the option `-l`. e.g. python3 tao2tex.py file.html -l
- - For batch mode, save the list of urls in a file, e.g. batch.txt and call `python3 tao2tex.py batch.txt -b. If you have a list of local files, you can use `-b -l`.
+ - For batch mode, save the list of urls in a file, e.g. batch.txt and call `python3 tao2tex.py batch.txt -b`. If you have a list of local files, you can use `-b -l`.
 
 Finally, you can specify the name of the .tex file with the -o option.
 
@@ -39,7 +39,7 @@ There are a number of keywords in the preamble; they are in all-caps and begin w
 
  - We did not implement logging properly, instead comments are directly printed to the command line.
  
- - We did not attempt to deal with Emoji; $`\LaTeX`$ is unable to render these without help (e.g. the `emoji` package in LuaTeX, and even this requires processing 😂 into `\emoji{face_with_tears_of_joy}`. This processing can be easily added, as python has easy to use emoji packages, but we opted to not treat this edgecase and add to the requirements. 
+ - We did not attempt to deal with Emoji; $`\LaTeX`$ is unable to render these without help (e.g. the `emoji` package in LuaTeX, and even this requires processing e.g. 😂 into `\emoji{face_with_tears_of_joy}`. This processing can be easily added, as python has easy to use emoji packages, but we opted to not treat this edgecase and add to the requirements. 
 
  - Most likely, modification is needed to work with other blogs, even those that are on wordpress, like https://mathproblems123.wordpress.com/. Despite looking quite similar, the precise way that the tags are laid out are different. 
 
