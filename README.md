@@ -2,7 +2,7 @@
 #### Video Demo: TODO
 
 ## Description
-Goes through the HTML of a wordpress math blogpost using a combination of regexes and BeautifulSoup, and spits out a $\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
+Goes through the HTML of a wordpress math blogpost using a combination of regexes and BeautifulSoup, and spits out a $\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
 
 ## Requirements and Installation
 You need reasonably up-to-date installations of Python 3 and LaTeX (to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
@@ -32,13 +32,17 @@ Finally, you can specify the name of the .tex file with the -o option.
 The easiest way to customise the output is to modify preamble.tex. The theorems look very close to how they appear online. This is achieved with `\usepackage[framemethod=tikz]{mdframed}` and the simple style `\mdfdefinestyle{tao}{outerlinewidth = 1,roundcorner=2pt,innertopmargin=0}
 `. The more standard `amsthm` environments are provided as a commented-out block.
 
-There are a number of keywords in the preamble; they are in all-caps and begin with `TTT-`, e.g. `TTT-BLOG-TITLE`. These are substituted via regex by tao2tex.py to create the `.tex` output. It is possible to create more of these keywords; to make tao2tex see them, you should modify the `preamble_formatter` function.
+There are a number of keywords in the given `preamble.tex`; they are in all-caps and begin with `TTT-`, e.g. `TTT-BLOG-TITLE`. These are substituted via regex by tao2tex.py to create the `.tex` output. It is possible to create more of these keywords; to make tao2tex see them, you should modify the `preamble_formatter` function.
 
-## Known Limitations
- - Since we pull website data using the `requests` module, we do not see any HTML generated from javascript. In particular, in the case of Tao's blogs, tao2tex is unable to retrieve the up/downvotes for each comment. This should be easy to fix by using Selenium.
+## Known Limitations or Issues
+ - Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript.  This should be easy to fix by using Selenium.
+
+ - For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
 
  - We did not implement logging properly, instead comments are directly printed to the command line.
  
  - We did not attempt to deal with Emoji; $`\LaTeX`$ is unable to render these without help (e.g. the [`emoji`](https://www.ctan.org/pkg/emoji) package with LuaTeX, and even this requires processing e.g. 😂 into `\emoji{face_with_tears_of_joy}`.) This processing can be easily added, as python has easy to use emoji packages, but we opted to not treat this edgecase and add to the requirements. 
+
+ - It is possible though unlikely that two different images of the same name are downloaded from two different posts. To avoid this, run `tao2tex.py` in different folders.
 
  - Most likely, modification of the BeautifulSoup part is needed to work with other blogs, even those that are on wordpress. Despite looking quite similar, the precise way that the tags are laid out seem to be different. 

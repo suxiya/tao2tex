@@ -303,6 +303,36 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
     return [r"\item "] + soup_processor(soup)
 
 
+def table_wrapper(soup: BeautifulSoup):
+    """Formats a table using the tabular environment"""
+    out = []
+    table_length = 0
+    for child in soup.children:
+        if child.name == "tr" or child.name == "th":
+
+            row = []
+            for gchild in child.children:
+                if (
+                    isinstance(gchild, NavigableString)
+                    and gchild.get_text().strip() == ""
+                ):
+                    continue
+                row.append("".join(soup_processor(gchild)))
+            table_length = max(table_length, len(row))
+            out.append("&".join(row))
+            out.append(r"\\")
+
+    column_width = 0.9 / table_length
+    column_format = "p{" + str(column_width) + "\\linewidth} "
+    beginning_string = (
+        macro("begin", "tabular") + "{" + column_format * table_length + "}"
+    )
+    ending_string = macro("end", "tabular")
+    return environment_formatter(
+        "center", "".join([beginning_string] + out + [ending_string])
+    )
+
+
 def child_processor(child: PageElement) -> list[str]:
     """Turns a child element into a list of legal LaTeX strings.
     We return a list instead of a single string to enable something like mild recursion.
@@ -322,6 +352,9 @@ def child_processor(child: PageElement) -> list[str]:
 
     elif child.name == "br":
         return ["\n"]
+
+    elif child.name == "table":
+        return table_wrapper(child)
 
     elif child.name == "p" and (
         "align" in child.attrs.keys()
@@ -608,9 +641,7 @@ def url2tex(url: str, local: bool, output):
 
     signature = (
         r"Automatically generated  using "
-        + ahref_formatter(
-            "https://github.com/clvnkhr/tao2tex", macro("texttt", "tao2tex.py")
-        )
+        + ahref_formatter("https://github.com/clvnkhr/tao2tex", "tao2tex.py")
         + f" from {ahref_formatter(url)} at {datetime.datetime.now()}"
     )
 
@@ -690,16 +721,13 @@ def main():
     if args.batch:
         with open(args.url, "r", encoding="utf8") as file:
             list_of_filenames = file.readlines()
-            for filename, i in enumerate(list_of_filenames):
+            for i, filename in enumerate(list_of_filenames):
                 numbered_name = None
                 if args.output:
                     numbered_name = args.output + str(i)
-                    url2tex(filename, args.local, numbered_name)
+                url2tex(filename.strip(), args.local, numbered_name)
     else:
         url2tex(args.url, args.local, args.output)
-
-    # TODO: test batch processing
-    # TODO: process tables
 
 
 if __name__ == "__main__":

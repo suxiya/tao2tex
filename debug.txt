@@ -1,13 +1,5 @@
 unknown tag:
 child=<span id="more-10851"></span>
-unknown tag:
-child=<table align="center">
-<tr>
-<td align="left"> Standard real <img alt="{x}" class="latex" src="https://s0.wp.com/latex.php?latex=%7Bx%7D&amp;bg=f
-unknown tag:
-child=<table align="center">
-<tr>
-<td align="left"> Standard distribution <img alt="{\lambda}" class="latex" src="https://s0.wp.com/latex.php?latex=%7
 gchild='\n'
 gchild=<p align="center"><img alt="\displaystyle  \frac{1}{2} \int_{{}^* {\bf R}^d} |u(T,x)|^2\ dx + \nu \int_{{}^* [0,T]} \int_{{}^* {\bf R}^d} |\nabla u(t,x)|^2\ dx \ \ \ \ \ (4)" class="latex" src="https://s0.wp.com/latex.php?latex=%5Cdisplaystyle++%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%7B%7D%5E%2A+%7B%5Cbf+R%7D%5Ed%7D+%7Cu%28T%2Cx%29%7C%5E2%5C+dx+%2B+%5Cnu+%5Cint_%7B%7B%7D%5E%2A+%5B0%2CT%5D%7D+%5Cint_%7B%7B%7D%5E%2A+%7B%5Cbf+R%7D%5Ed%7D+%7C%5Cnabla+u%28t%2Cx%29%7C%5E2%5C+dx+%5C+%5C+%5C+%5C+%5C+%284%29&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Cdisplaystyle++%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%7B%7D%5E%2A+%7B%5Cbf+R%7D%5Ed%7D+%7Cu%28T%2Cx%29%7C%5E2%5C+dx+%2B+%5Cnu+%5Cint_%7B%7B%7D%5E%2A+%5B0%2CT%5D%7D+%5Cint_%7B%7B%7D%5E%2A+%7B%5Cbf+R%7D%5Ed%7D+%7C%5Cnabla+u%28t%2Cx%29%7C%5E2%5C+dx+%5C+%5C+%5C+%5C+%5C+%284%29&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Cdisplaystyle++%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%7B%7D%5E%2A+%7B%5Cbf+R%7D%5Ed%7D+%7Cu%28T%2Cx%29%7C%5E2%5C+dx+%2B+%5Cnu+%5Cint_%7B%7B%7D%5E%2A+%5B0%2CT%5D%7D+%5Cint_%7B%7B%7D%5E%2A+%7B%5Cbf+R%7D%5Ed%7D+%7C%5Cnabla+u%28t%2Cx%29%7C%5E2%5C+dx+%5C+%5C+%5C+%5C+%5C+%284%29&amp;bg=ffffff&amp;fg=000000&amp;s=0&amp;c=20201002&amp;zoom=4.5 4x"/></p>
 gchild='\n'
