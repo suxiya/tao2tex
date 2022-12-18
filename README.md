@@ -29,8 +29,7 @@ tao2tex also supports a local mode, and a batch mode:
 Finally, you can specify the name of the .tex file with the `-o` option.
 
 ## Customizing the output
-The easiest way to customise the output is to modify preamble.tex. The theorems look very close to how they appear online. This is achieved with `\usepackage[framemethod=tikz]{mdframed}` and the simple style `\mdfdefinestyle{tao}{outerlinewidth = 1,roundcorner=2pt,innertopmargin=0}
-`. The more standard `amsthm` environments are provided as a commented-out block.
+The easiest way to customise the output is to modify preamble.tex. The theorems look very close to how they appear online. This is achieved with `\usepackage[framemethod=tikz]{mdframed}` and the simple style `\mdfdefinestyle{tao}{outerlinewidth = 1,roundcorner=2pt,innertopmargin=0}`. The more standard `amsthm` environments are provided as a commented-out block.
 
 There are a number of keywords in the given `preamble.tex`; they are in all-caps and begin with `TTT-`, e.g. `TTT-BLOG-TITLE`. These are substituted via regex by tao2tex.py to create the `.tex` output. It is possible to create more of these keywords; to make tao2tex see them, you should modify the `preamble_formatter` function.
 
