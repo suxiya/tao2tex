@@ -2,10 +2,10 @@
 #### Video Demo: TODO
 
 ## Description
-Goes through the HTML of a wordpress math blogpost using a combination of regexes and BeautifulSoup, and spits out a $\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
+Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s blog](terrytao.wordpress.com)) using a combination of regexes and BeautifulSoup, and spits out a $\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
 
 ## Requirements and Installation
-You need reasonably up-to-date installations of Python 3 and LaTeX (to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
+You need reasonably up-to-date installations of Python 3 and $\LaTeX$ (to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
  - lxml
  - bs4 ([Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))
  - requests
