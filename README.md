@@ -23,10 +23,10 @@ You need reasonably up-to-date installations of Python 3 and LaTeX (to compile t
 For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/ `. 
 
 tao2tex also supports a local mode, and a batch mode:
- - For local mode, save the html of the page and then use the name of the file in place of the url, with the option `-l`. e.g. python3 tao2tex.py file.html -l
+ - For local mode, save the html of the page and then use the name of the file in place of the url, with the option `-l`. e.g. `python3 tao2tex.py file.html -l`
  - For batch mode, save the list of urls in a file, e.g. batch.txt and call `python3 tao2tex.py batch.txt -b`. If you have a list of local files, you can use `-b -l`.
 
-Finally, you can specify the name of the .tex file with the -o option.
+Finally, you can specify the name of the .tex file with the `-o` option.
 
 ## Customizing the output
 The easiest way to customise the output is to modify preamble.tex. The theorems look very close to how they appear online. This is achieved with `\usepackage[framemethod=tikz]{mdframed}` and the simple style `\mdfdefinestyle{tao}{outerlinewidth = 1,roundcorner=2pt,innertopmargin=0}
