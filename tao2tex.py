@@ -92,22 +92,19 @@ def image_formatter(path: str, width: str, height: str) -> str:
         filename = filename_match.group(1)
 
         options = []
-        width = int(width) / 150  # now in inches
-        options.append(f"{width=} " + "in")
-        height = int(height) / 150  # now in inches
-        options.append(f"{height=} " + "in")
+        if width:
+            width = int(width) / 150  # now in inches
+            options.append(f"{width=} " + "in")
+        if height:
+            height = int(height) / 150  # now in inches
+            options.append(f"{height=} " + "in")
         return macro("includegraphics", filename, options)
 
 
 def placeholder_formatter(width, height):
     """formats the default stock image using the includegraphics macro"""
     # we assume pictures are at "150 dpi" (dots per inch)
-    options = []
-    width = int(width) / 150  # now in inches
-    options.append(f"{width=} " + "in")
-    height = int(height) / 150  # now in inches
-    options.append(f"{height=} " + "in")
-    return macro("includegraphics", "example-image", options)
+    return image_formatter("example-image", width, height)
 
 
 def ahref_formatter(href: str, text: str = "") -> str:
@@ -404,12 +401,15 @@ def child_processor(child: PageElement) -> list[str]:
     elif child.name == "img":
         if "src" in child.attrs.keys():
             src = child["src"]
-            if "width" in child.attrs.keys() and "height" in child.attrs.keys():
+            width = ""
+            height = ""
+            if "width" in child.attrs.keys():
                 width = child["width"]
+            if "height" in child.attrs.keys():
                 height = child["height"]
-                if download_file(src):
-                    return [image_formatter(src, width, height)]
-                return [placeholder_formatter(width, height)]
+            if download_file(src):
+                return [image_formatter(src, width, height)]
+            return [placeholder_formatter(width, height)]
 
         print(f"img tag with no src attr: {child=}")
         return []
