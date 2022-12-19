@@ -42,34 +42,50 @@ def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
     return soup
 
 
-def download_file(url: str) -> bool:
-    """downloads a file at url; returns true if successful"""
+def download_file(url: str) -> str:
+    """downloads a file at url; returns saved filename if successful, else an empty string"""
     url_simplifier = re.compile(r"(.*?)\?")
     if can_be_simplified := url_simplifier.search(url):
         url = can_be_simplified.group(1)
     filename_from_url = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
     filename = url
     if filename_match := filename_from_url.match(url):
-        filename = filename_match.group(1)
-
+        if filename_match.group(1):
+            filename = filename_match.group(1)
+        filename = filename_match.group(2)
     if os.path.exists(url):
         # avoid redownloading files
-        return True
+        return filename
     try:
         raw_data = requests.get(url, timeout=TIMEOUT_IN_SECONDS)
     except requests.exceptions.ConnectionError:
         print(f"failed to download from {url=}")
-        return False
+        return ""
+
     with open(filename, "wb") as file:
         file.write(raw_data.content)
-        return True
+        return filename
 
 
 def macro(
-    macro_command: str, macro_input: str = "", macro_options: list[str] = None
+    macro_command: str,
+    macro_input: str = "",
+    macro_options: list[str] = None,
+    options_before_input=False,
 ) -> str:
     """simple command to print basic latex macros"""
     if macro_options:
+        if options_before_input:
+            return (
+                "\\"
+                + macro_command
+                + "["
+                + ",".join(macro_options)
+                + "]"
+                + "{"
+                + macro_input
+                + "}"
+            )
         return (
             "\\"
             + macro_command
@@ -87,18 +103,15 @@ def image_formatter(path: str, width: str, height: str) -> str:
     """formats an image at path using the includegraphics macro.
     (So, the preamble needs to include the graphicx package.)
     We assume pictures are at "150 dpi" (dots per inch)"""
-    filename_from_path = re.compile(r".*/(.*\..*)\?|.*/(.*\..*)")
-    if filename_match := filename_from_path.match(path):
-        filename = filename_match.group(1)
 
-        options = []
-        if width:
-            width = int(width) / 150  # now in inches
-            options.append(f"{width=} " + "in")
-        if height:
-            height = int(height) / 150  # now in inches
-            options.append(f"{height=} " + "in")
-        return macro("includegraphics", filename, options)
+    options = []
+    if width:
+        width = int(width) / 150  # now in inches
+        options.append(f"{width=} " + "in")
+    if height:
+        height = int(height) / 150  # now in inches
+        options.append(f"{height=} " + "in")
+    return macro("includegraphics", path, options, options_before_input=True)
 
 
 def placeholder_formatter(width, height):
@@ -112,7 +125,8 @@ def ahref_formatter(href: str, text: str = "") -> str:
     If no text is given, then the href is used as text."""
     url_matcher = re.compile(r"(http|www).*")  # http or www, followed by anything
     ref_matcher = re.compile(r"[0-9]+")  # at least one number
-    eqref_matcher = re.compile(r"\([0-9]+\)")  # at least one number in round brackets
+    # at least one number in round brackets
+    eqref_matcher = re.compile(r"\([0-9]+\)")
 
     if url_matcher.match(href):
         if text == "":
@@ -195,7 +209,8 @@ def environment_wrapper(
 def theorem_wrapper(unprocessed_thm_title: str, soup: BeautifulSoup) -> list[str]:
     """formats a blockquote into a theorem/conjecture/etc environment"""
     theoremtype = "note"  # randomly defaulting to "note" to avoid latex errors
-    title_matcher = re.compile(r"([a-zA-z]*) ")  # first word in unprocessed_thm_title
+    # first word in unprocessed_thm_title
+    title_matcher = re.compile(r"([a-zA-z]*) ")
     if title_match := re.search(title_matcher, unprocessed_thm_title):
         match title := title_match.group(1).lower():
             case (
@@ -245,7 +260,8 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
     substitutions = [
         ("[" + unusual_whitespace + "]+", " "),
         (r"{", r"TTT-TEMPVAR💩🫠🫥1"),  # temporarily change {s and }s
-        (r"}", r"TTT-TEMPVAR💩🫠🫥2"),  # to distinguish from those in replacements below
+        # to distinguish from those in replacements below
+        (r"}", r"TTT-TEMPVAR💩🫠🫥2"),
         (r"\\", r"\\textbackslash{}"),  # needs to come before next 3
         ("\\^", r"\\textasciicircum{}"),
         ("\\~", r"\\textasciitilde{}"),
@@ -407,8 +423,8 @@ def child_processor(child: PageElement) -> list[str]:
                 width = child["width"]
             if "height" in child.attrs.keys():
                 height = child["height"]
-            if download_file(src):
-                return [image_formatter(src, width, height)]
+            if filename := download_file(src):
+                return [image_formatter(filename, width, height)]
             return [placeholder_formatter(width, height)]
 
         print(f"img tag with no src attr: {child=}")
@@ -575,7 +591,6 @@ def comments_section_processor1(child: BeautifulSoup, depth: int = 0) -> list[st
     ):
         comments.append(comment_processor(child))
     elif child.name == "ul":
-        # print(f"{depth=}")
         if depth < 3:
             comments.append(macro("begin", "itemize"))
         for gchild in child.children:

@@ -19,10 +19,10 @@ You need reasonably up-to-date installations of Python 3 and $\LaTeX$ (to compil
  1. clone the repo
  2. Go to [Terry’s blog](terrytao.wordpress.com) and find a post you want to convert to $\LaTeX$.
 
- 2. Copy the URL.
- 3. `cd` to the repo and run `python3 tao2tex.py URL`.
- 4. Wait a few seconds and a `.tex` file will be produced.
- 5. Run the `.tex` file in your favourite $\LaTeX$ program to create a finished PDF.
+ 3. Copy the URL.
+ 4. `cd` to the repo and run `python3 tao2tex.py URL`.
+ 5. Wait a few seconds and a `.tex` file will be produced.
+ 6. Run the `.tex` file in your favourite $\LaTeX$ program to create a finished PDF.
 
 For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/`.
 
