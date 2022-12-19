@@ -1,6 +1,6 @@
 # tao2tex
 
-#### Video Demo: TODO
+#### Video Demo: https://youtu.be/-3nFLI_w1ao
 
 ## Description
 
