@@ -15,6 +15,7 @@ naming conventions:
 """
 import argparse
 import datetime
+import logging
 import os
 import re  # https://regexkit.com/python-regex
 
@@ -35,7 +36,7 @@ def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
     try:
         soup = BeautifulSoup(user_html, "lxml", parse_only=strainer)
     except FeatureNotFound:
-        print(
+        logging.warning(
             "You should install the lxml parser: pip install lxml\n Trying with default parser"
         )
         soup = BeautifulSoup(user_html, parse_only=strainer)
@@ -59,7 +60,7 @@ def download_file(url: str) -> str:
     try:
         raw_data = requests.get(url, timeout=TIMEOUT_IN_SECONDS)
     except requests.exceptions.ConnectionError:
-        print(f"failed to download from {url=}")
+        logging.warning("failed to download from url=%s", url)
         return ""
 
     with open(filename, "wb") as file:
@@ -71,9 +72,9 @@ def macro(
     macro_command: str,
     macro_input: str = "",
     macro_options: list[str] = None,
-    options_before_input=False,
+    options_before_input: bool = False,
 ) -> str:
-    """simple command to print basic latex macros"""
+    """simple command to make basic latex macros"""
     if macro_options:
         if options_before_input:
             return (
@@ -114,7 +115,7 @@ def image_formatter(path: str, width: str, height: str) -> str:
     return macro("includegraphics", path, options, options_before_input=True)
 
 
-def placeholder_formatter(width, height):
+def placeholder_formatter(width: str, height: str):
     """formats the default stock image using the includegraphics macro"""
     # we assume pictures are at "150 dpi" (dots per inch)
     return image_formatter("example-image", width, height)
@@ -140,7 +141,7 @@ def ahref_formatter(href: str, text: str = "") -> str:
         return string_formatter(href)
 
 
-def ahref_wrapper(href, soup: BeautifulSoup) -> list[str]:
+def ahref_wrapper(href: str, soup: BeautifulSoup) -> list[str]:
     "figures out how to format soups that are wrapped by an a tag"
     soup_out = soup_processor(soup)
     # special case for images
@@ -259,6 +260,8 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
 
     substitutions = [
         ("[" + unusual_whitespace + "]+", " "),
+        ("\uff0c", ","),  # U+FF0C is a "full-width comma". LaTeX doesn't like it
+        ("。", "."),
         (r"{", r"TTT-TEMPVAR💩🫠🫥1"),  # temporarily change {s and }s
         # to distinguish from those in replacements below
         (r"}", r"TTT-TEMPVAR💩🫠🫥2"),
@@ -346,6 +349,11 @@ def table_wrapper(soup: BeautifulSoup):
     )
 
 
+def strike_wrapper(child: PageElement):
+    """Formats a strikethrough"""
+    return macro("sout", "".join(soup_processor(child)))
+
+
 def child_processor(child: PageElement) -> list[str]:
     """Turns a child element into a list of legal LaTeX strings.
     We return a list instead of a single string to enable something like mild recursion.
@@ -355,7 +363,7 @@ def child_processor(child: PageElement) -> list[str]:
         - how the command should be typed (formatters and wrappers)
     """
     if not child:
-        print("empty child in child_processor")
+        logging.warning("empty child in child_processor")
         return []
     if isinstance(child, NavigableString):
         return [string_formatter(child.get_text())]
@@ -404,8 +412,10 @@ def child_processor(child: PageElement) -> list[str]:
             return [section_formatter(child.contents[0].get_text())]
         else:
             # fallback processing.
-            print('fallback to basic processing in p align="..." tag')
-            print(f"{child=}"[:150])
+            logging.warning(
+                'fallback to basic processing in p align="..." tag\n child=%s',
+                str(child),
+            )
             return soup_processor(child)
     elif (
         child.name == "img"
@@ -427,7 +437,7 @@ def child_processor(child: PageElement) -> list[str]:
                 return [image_formatter(filename, width, height)]
             return [placeholder_formatter(width, height)]
 
-        print(f"img tag with no src attr: {child=}")
+        logging.warning("img tag with no src attr: child=%s", str(child))
         return []
 
     elif child.name == "a" and "href" in child.attrs.keys():
@@ -444,7 +454,6 @@ def child_processor(child: PageElement) -> list[str]:
         # if this ever breaks, good luck whoever wants to debug this in the future...
         if child.contents:
             for gchild in child.contents:
-                print(f"{gchild=}")
                 if (
                     isinstance(gchild, NavigableString)
                     and gchild.get_text().strip() == ""
@@ -479,9 +488,11 @@ def child_processor(child: PageElement) -> list[str]:
                 child.p.b.extract().get_text()
             )  # NB extract() removes the tag so that it is not processed twice.
         else:
-            print("unknown theorem: falling back to theorem")
-            print(f"{child=}"[:150])
-            unprocessed_thm_name = "theorem"
+            logging.debug(
+                "unknown theorem: will use theorem_wrapper's default\nchild=%s",
+                str(child),
+            )
+            unprocessed_thm_name = ""
         return theorem_wrapper(unprocessed_thm_name, child)
     elif child.name == "p":
         return soup_processor(child) + ["\n"]
@@ -497,10 +508,11 @@ def child_processor(child: PageElement) -> list[str]:
         or ("id" in child.attrs.keys() and "jp-post-flair" in child.attrs["id"])
     ):
         return []
+    elif child.name == "strike":
+        return strike_wrapper(child)
     else:
         # fallback to get_text
-        print("unknown tag:")
-        print(f"{child=}"[:150])
+        logging.warning("unknown tag: child=%s", str(child))
         return [child.get_text()]
 
 
@@ -509,7 +521,7 @@ def soup_processor(soup: BeautifulSoup) -> list[str]:
     into a list of legal LaTeX strings."""
     out = []
     if not soup:
-        print("empty soup in soup_processor")
+        logging.warning("empty soup in soup_processor")
         return out
     for child in soup.children:
         out.extend(child_processor(child))

@@ -4,3 +4,10 @@ batch.txt
 debug.txt
 html_prettyprinter.py
 .DS_Store
+*.png
+*.jpg
+*.pdf
+*.aux
+*.log
+*.gz
+*.out
