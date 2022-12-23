@@ -362,6 +362,7 @@ def child_processor(child: PageElement) -> list[str]:
         - detecting what and where LaTeX commands are required (which happens here)
         - how the command should be typed (formatters and wrappers)
     """
+    logging.debug("processing child=%s", child)
     if not child:
         logging.warning("empty child in child_processor")
         return []
@@ -657,7 +658,7 @@ def comment_processor(soup: BeautifulSoup) -> list[str]:
     )
 
 
-def url2tex(url: str, local: bool, output):
+def url2tex(url: str, local: bool, output: str, print_output: bool = False):
     "opens a url (or file) and creates a tex file with name given by output"
     raw_html = ""
     if local:
@@ -729,6 +730,9 @@ def url2tex(url: str, local: bool, output):
         output = blog_title + "-" + title + ".tex"
     with open(output, "w", encoding="utf-8") as output_file:
         output_file.write("".join(out))
+    if print_output:
+        print("".join(out))
+    logging.debug("the output is %i lines long.", len(out))
 
 
 def main():
@@ -743,7 +747,17 @@ def main():
     )
     parser.add_argument("url", help="url of blog post to convert")
     parser.add_argument("-o", "--output", help="name of output file")
+    parser.add_argument(
+        "-p", "--print", help="print output to command line", action="store_true"
+    )
+    parser.add_argument(
+        "-d", "--debug", help="Log debug statements", action="store_true"
+    )
+
     args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(filename="tao2tex_debug.log", level=logging.DEBUG)
 
     if args.batch:
         with open(args.url, "r", encoding="utf8") as file:
@@ -754,7 +768,7 @@ def main():
                     numbered_name = args.output + str(i)
                 url2tex(filename.strip(), args.local, numbered_name)
     else:
-        url2tex(args.url, args.local, args.output)
+        url2tex(args.url, args.local, args.output, args.print)
 
 
 if __name__ == "__main__":
