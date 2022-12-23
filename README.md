@@ -45,8 +45,6 @@ There are a number of keywords in the given `preamble.tex`; they are in all-caps
 
 - For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
 
-- We did not implement logging properly, instead comments are directly printed to the command line.
-
 - We did not attempt to deal with Emoji; $`\LaTeX`$ is unable to render these without help (e.g. the [`emoji`](https://www.ctan.org/pkg/emoji) package with LuaTeX, and even this requires processing e.g. 😂 into `\emoji{face_with_tears_of_joy}`.) This processing can be easily added, as python has easy to use emoji packages, but we opted to not treat this edgecase and add to the requirements.
 
 - It is possible though unlikely that two different images of the same name are downloaded from two different posts. To avoid this, run `tao2tex.py` in different folders.
