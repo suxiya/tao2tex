@@ -33,6 +33,10 @@ tao2tex also supports a local mode, and a batch mode:
 
 In addition, you can specify the name of the .tex file with the `-o` option, the `-p` option prints the output to the command-line, and `-d` enables a rudimentary debugger.
 
+## Testing
+
+Since the desired output is not precisely defined, we provide a `test.html` file which may be used for debugging (in particular, for adding features, adjusting to breaking changes, or for adapting to other blogs). It is a short sample HTML file that can be used to test the output of tao2tex via the command `python3 tao2tex.py test.html -l`.
+
 ## Customizing the output
 
 The easiest way to customise the output is to modify `preamble.tex`. The theorems look very close to how they appear online. This is achieved with `\usepackage[framemethod=tikz]{mdframed}` and the simple style `\mdfdefinestyle{tao}{outerlinewidth = 1,roundcorner=2pt,innertopmargin=0}`. The more standard `amsthm` environments are provided as a commented-out block.

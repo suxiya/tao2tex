@@ -1,5 +1,6 @@
 *.tex
 *.html
+!test.html
 batch.txt
 debug.txt
 html_prettyprinter.py

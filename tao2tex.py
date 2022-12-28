@@ -477,6 +477,8 @@ def child_processor(child: PageElement) -> list[str]:
         ):
             # make second_uncle adopt child
             second_uncle.insert(0, child)
+            # we skip formatting now, as it will be formatted when
+            # we reach the second_uncle in the outermost for loop.
             return []
         return [label_formatter(child.attrs["name"])]
     elif child.name == "blockquote":
@@ -681,7 +683,9 @@ def url2tex(url: str, local: bool, output: str, print_output: bool = False):
     elif may_have_title := header_soup.find(id="title"):
         blog_title = string_formatter(may_have_title.get_text(), remove_newlines=True)
     else:
-        blog_title = soup_processor(header_soup)
+        # take the title from the <head> tag
+        every_page_has_a_title = SoupStrainer("head")
+        blog_title = soup_processor(html2soup(raw_html, every_page_has_a_title))
 
     tagline = "Blog Tagline Goes Here"
     if may_have_tagline := header_soup.find(id="tagline"):
