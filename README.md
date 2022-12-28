@@ -43,13 +43,13 @@ The easiest way to customise the output is to modify `preamble.tex`. The theorem
 
 There are a number of keywords in the given `preamble.tex`; they are in all-caps and begin with `TTT-`, e.g. `TTT-BLOG-TITLE`. These are substituted via regex by tao2tex.py to create the `.tex` output. It is possible to create more of these keywords; to make tao2tex see them, you should modify the `preamble_formatter` function.
 
+Emoji that appear (for instance, in [certain](https://terrytao.wordpress.com/2022/10/07/a-bayesian-probability-worksheet/#comment-659640) comments) are processed (e.g. 😂 becomes `\emoji{face_with_tears_of_joy}`); `\emoji` is defined to simply be `\texttt`, as $\rm\LaTeX$ is unable to render emoji without help. But you can get the actual emoji if you comment out this definition, import the [`emoji`](https://www.ctan.org/pkg/emoji) package, and compile with $\rm Lua\TeX$, [a variant](https://www.luatex.org/) of $\rm pdf\TeX$.
+
 ## Known Limitations or Issues
 
 - Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript.  This should be easy to fix by using Selenium.
 
 - For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
-
-- We did not attempt to deal with Emoji; $\rm\LaTeX$ is unable to render these without help (e.g. the [`emoji`](https://www.ctan.org/pkg/emoji) package with $\rm Lua\TeX$[, a variant](https://www.luatex.org/) of $\rm pdf\TeX$, and even this requires processing e.g. 😂 into `\emoji{face_with_tears_of_joy}`.) This processing can be easily added, as python has easy to use emoji modules, but we opted to not treat this edgecase and add to the requirements.
 
 - It is possible though unlikely that two different images of the same name are downloaded from two different posts. To avoid this, run `tao2tex.py` in different folders.
 

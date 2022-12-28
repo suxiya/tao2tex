@@ -31,9 +31,15 @@
 	\usepackage[margin=3cm]{geometry}
 \usepackage[normalem]{ulem}
 \usepackage{graphicx}
+%%%%% If you find emoji in the blogpost (perhaps in the comments), 
+%%%%% then you can comment out the next line:
+\newcommand{\emoji}[1]{\texttt{#1}}
+%%%%% and instead use LuaTeX and the emoji package to properly print them:
+% \usepackage{emoji}
 \usepackage{microtype}
 \usepackage{xcolor}
 \usepackage[T1]{fontenc}
+\usepackage[hyphens]{url}
 \usepackage[colorlinks = true,
 			citecolor = blue,
 			urlcolor = blue,

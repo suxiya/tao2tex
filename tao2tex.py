@@ -12,6 +12,8 @@ naming conventions:
     a formatter function returns a string,
     a wrapper function calls soup_processor or child_processor somewhere
     and returns a list of strings.
+
+Typehints are just for readability; mypy complains a lot.
 """
 import argparse
 import datetime
@@ -19,6 +21,7 @@ import logging
 import os
 import re  # https://regexkit.com/python-regex
 
+import emoji
 import requests
 from bs4 import (
     BeautifulSoup,
@@ -29,6 +32,7 @@ from bs4 import (
 )
 
 TIMEOUT_IN_SECONDS = 60
+ASSUMED_DPI = 100
 
 
 def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
@@ -71,7 +75,7 @@ def download_file(url: str) -> str:
 def macro(
     macro_command: str,
     macro_input: str = "",
-    macro_options: list[str] = None,
+    macro_options: list[str] | None = None,
     options_before_input: bool = False,
 ) -> str:
     """simple command to make basic latex macros"""
@@ -103,21 +107,20 @@ def macro(
 def image_formatter(path: str, width: str, height: str) -> str:
     """formats an image at path using the includegraphics macro.
     (So, the preamble needs to include the graphicx package.)
-    We assume pictures are at "150 dpi" (dots per inch)"""
+    We assume pictures are at "ASSUMED_DPI" (dots per inch)"""
 
     options = []
     if width:
-        width = int(width) / 150  # now in inches
+        width = int(width) / ASSUMED_DPI  # now in inches
         options.append(f"{width=} " + "in")
     if height:
-        height = int(height) / 150  # now in inches
+        height = int(height) / ASSUMED_DPI  # now in inches
         options.append(f"{height=} " + "in")
     return macro("includegraphics", path, options, options_before_input=True)
 
 
 def placeholder_formatter(width: str, height: str):
     """formats the default stock image using the includegraphics macro"""
-    # we assume pictures are at "150 dpi" (dots per inch)
     return image_formatter("example-image", width, height)
 
 
@@ -265,8 +268,9 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
         (r"{", r"TTT-TEMPVAR💩🫠🫥1"),  # temporarily change {s and }s
         # to distinguish from those in replacements below
         (r"}", r"TTT-TEMPVAR💩🫠🫥2"),
-        (r"\\", r"\\textbackslash{}"),  # needs to come before next 3
+        (r"\\", r"\\textbackslash{}"),  # needs to come before next 4
         ("\\^", r"\\textasciicircum{}"),
+        ("\\#", r"\\#"),
         ("\\~", r"\\textasciitilde{}"),
         (r"\|", r"\\textbar{}"),
         (r"[$%&\_]", r"\\\g<0>"),  # \g<0> means the 0th matched group
@@ -278,6 +282,15 @@ def string_formatter(text: str, remove_newlines: bool = False) -> str:
         regex = re.compile(before)
         text = re.sub(regex, after, text)
 
+    # finally we need to use the emoji module to convert emojis into something that LaTeX can handle,
+    # We put them into an \emoji command; either compile with \usepackage{emoji} in LuaTeX,
+    # or use the default definition of \emoji in preamble.tex.
+    text = emoji.replace_emoji(
+        text,
+        replace=lambda chars, data_dict: macro(
+            "emoji", data_dict["en"].strip(":").replace("_", "-")
+        ),
+    )
     return text
 
 
