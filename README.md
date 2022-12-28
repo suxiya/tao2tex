@@ -47,7 +47,7 @@ Emoji that appear (for instance, in [certain](https://terrytao.wordpress.com/202
 
 ## Known Limitations or Issues
 
-- Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript.  This should be easy to fix by using Selenium.
+- Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript.  This should be easy to adapt by using Selenium.
 
 - For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
 
