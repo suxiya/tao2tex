@@ -60,6 +60,7 @@ def download_file(url: str) -> str:
         filename = filename_match.group(2)
     if os.path.exists(url):
         # avoid redownloading files
+        logging.debug("skipping download because file already exists")
         return filename
     try:
         raw_data = requests.get(url, timeout=TIMEOUT_IN_SECONDS)
