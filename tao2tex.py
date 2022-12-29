@@ -112,11 +112,15 @@ def image_formatter(path: str, width: str, height: str) -> str:
     options = []
     if width:
         width = int(width) / ASSUMED_DPI  # now in inches
-        options.append(f"{width=} " + "in")
+        options.append(f"{width=} in")
     if height:
         height = int(height) / ASSUMED_DPI  # now in inches
-        options.append(f"{height=} " + "in")
-    return macro("includegraphics", path, options, options_before_input=True)
+        options.append(f"{height=} in")
+    return (
+        "\n\n"  # pictures are most likely meant to be on a new line.
+        + macro("includegraphics", path, options, options_before_input=True)
+        + "\n"
+    )
 
 
 def placeholder_formatter(width: str, height: str):
@@ -245,52 +249,54 @@ def label_formatter(label: str) -> str:
     return macro("label", label)
 
 
-def string_formatter(text: str, remove_newlines: bool = False) -> str:
+def string_formatter(text: str) -> str:
     """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages).
     Hence this should not be called in math_formatter and related functions."""
-
+    prefix = " " if text.startswith(" ") else ""
+    postfix = " " if text.endswith(" ") else ""
+    text = prefix + " ".join(text.split()) + postfix
     # there must be better syntax for the below...
     unusual_whitespace = (
-        "\t\u0009\u00A0\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
+        "\u0009\u00A0\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
         + "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009"
         + "\u200A\u200B\u200C\u200D\u200E\u200F\u202F"
         + "\u205F\u2060\u2061\u2062\u2063\u2064\u206A\u206b\u206c"
         + "\u206d\u206e\u206f\u3000\u2800\u3164\ufeff\uffa0\U0001D159"
         + "\U0001D173\U0001D174\U0001D175\U0001D176\U0001D177\U0001D178\U0001D179\U0001D17A"
     )
-    if remove_newlines:
-        unusual_whitespace += "\n"
+    whitespace_regex = re.compile("[" + unusual_whitespace + "]+")
+    text = re.sub(whitespace_regex, " ", text)
+    other_substitutions = str.maketrans(
+        {
+            "\uff0c": ",",  # U+FF0C is the "full-width comma". LaTeX doesn't like it
+            "\u3002": ".",  # U+3002 is the "ideographic full stop", e.g. in Chinese and Japanese.
+            "\\": r"\textbackslash{}",
+            r"^": r"\textasciicircum{}",
+            "#": r"\#",
+            "~": r"\textasciitilde{}",
+            "|": r"\textbar{}",
+            "$": r"\$",
+            "%": r"\%",
+            "&": r"\&",
+            "_": r"\_",
+            r"{": r"\{",
+            r"}": r"\}",
+        }
+    )
 
-    substitutions = [
-        ("[" + unusual_whitespace + "]+", " "),
-        ("\uff0c", ","),  # U+FF0C is a "full-width comma". LaTeX doesn't like it
-        ("。", "."),
-        (r"{", r"TTT-TEMPVAR💩🫠🫥1"),  # temporarily change {s and }s
-        # to distinguish from those in replacements below
-        (r"}", r"TTT-TEMPVAR💩🫠🫥2"),
-        (r"\\", r"\\textbackslash{}"),  # needs to come before next 4
-        ("\\^", r"\\textasciicircum{}"),
-        ("\\#", r"\\#"),
-        ("\\~", r"\\textasciitilde{}"),
-        (r"\|", r"\\textbar{}"),
-        (r"[$%&\_]", r"\\\g<0>"),  # \g<0> means the 0th matched group
-        (r"TTT-TEMPVAR💩🫠🫥1", r"\{"),
-        (r"TTT-TEMPVAR💩🫠🫥2", r"\}"),
-    ]
+    text = text.translate(other_substitutions)
 
-    for (before, after) in substitutions:
-        regex = re.compile(before)
-        text = re.sub(regex, after, text)
-
-    # finally we need to use the emoji module to convert emojis into something that LaTeX can handle,
-    # We put them into an \emoji command; either compile with \usepackage{emoji} in LuaTeX,
-    # or use the default definition of \emoji in preamble.tex.
+    # finally we need to use the emoji module to convert emojis
+    # into something that LaTeX can handle. We put them into an \emoji macro;
+    #   either compile with \usepackage{emoji} in LuaTeX,
+    #   or use the default definition of \emoji in preamble.tex.
     text = emoji.replace_emoji(
         text,
         replace=lambda chars, data_dict: macro(
             "emoji", data_dict["en"].strip(":").replace("_", "-")
         ),
     )
+
     return text
 
 
@@ -315,13 +321,13 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
         and isinstance(first_child, NavigableString)
     ):
         first_child = str(first_child.extract())
-        bullet_matcher = re.compile(r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*->]")
+        bullet_matcher = re.compile(r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*-]")
         #  see  https://regexkit.com/python-regex,
         # matches common bullet or numberings
-        # eg: "1.", "(2)", "[3]", "4)", "(v)", ">". ,"*", and "."
+        # eg: "1.", "(2)", "[3]", "4)", "(v)", "*", and "."
         # Doesn't match 1, because it will then match e.g "Therefore,".
         # only matches ≤3 chars in label to avoid e.g. (Diffusion)
-        # Doesn't match Eg. 1, Eg. 2, Eg. 3.
+        # Doesn't match Eg. 1, Eg. 2, Eg. 3...
 
         if bullet_match := bullet_matcher.match(first_child):
             bullet_option = "[" + bullet_match.group() + "]"
@@ -526,6 +532,8 @@ def child_processor(child: PageElement) -> list[str]:
         return []
     elif child.name == "strike":
         return strike_wrapper(child)
+    elif child.name == "span" and len(child.contents) == 0:
+        return []
     else:
         # fallback to get_text
         logging.warning("unknown tag: child=%s", str(child))
@@ -692,9 +700,9 @@ def url2tex(url: str, local: bool, output: str, print_output: bool = False):
     blog_title = "Blog Title Goes Here"
     header_soup = html2soup(raw_html, header_strainer)
     if may_have_title := header_soup.find(id="blog-title"):
-        blog_title = string_formatter(may_have_title.get_text(), remove_newlines=True)
+        blog_title = string_formatter(may_have_title.get_text())
     elif may_have_title := header_soup.find(id="title"):
-        blog_title = string_formatter(may_have_title.get_text(), remove_newlines=True)
+        blog_title = string_formatter(may_have_title.get_text())
     else:
         # take the title from the <head> tag
         every_page_has_a_title = SoupStrainer("head")
@@ -702,16 +710,16 @@ def url2tex(url: str, local: bool, output: str, print_output: bool = False):
 
     tagline = "Blog Tagline Goes Here"
     if may_have_tagline := header_soup.find(id="tagline"):
-        tagline = string_formatter(may_have_tagline.get_text(), remove_newlines=True)
+        tagline = string_formatter(may_have_tagline.get_text())
 
     primary_strainer = SoupStrainer("div", id="primary")
     primary_soup = html2soup(raw_html, primary_strainer)
 
     title = "Post Title Goes Here"
     if may_be_post_title := primary_soup.h1:
-        title = string_formatter(may_be_post_title.get_text(), remove_newlines=True)
+        title = string_formatter(may_be_post_title.get_text())
     elif may_be_post_title := primary_soup.find("title"):
-        title = string_formatter(may_be_post_title.get_text(), remove_newlines=True)
+        title = string_formatter(may_be_post_title.get_text())
     else:
         title = blog_title
 
@@ -738,7 +746,7 @@ def url2tex(url: str, local: bool, output: str, print_output: bool = False):
         comments = comment_soup.find(attrs={"id": "commentslist"})
 
     out = (
-        [preamble, r"\begin{document}", r"\maketitle"]
+        [preamble, r"\begin{document}", r"\maketitle{}"]
         + soup_processor(content)
         + comments_section_processor(comments)
         + [r"\end{document}"]
