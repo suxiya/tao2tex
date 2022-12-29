@@ -10,9 +10,10 @@ Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s
 
 You need reasonably up-to-date installations of Python 3 and $\rm\LaTeX$ (to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
 
-- lxml
-- bs4 ([Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))
-- requests
+- [`lxml`](https://lxml.de/)
+- `bs4` ([Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))
+- [`requests`](https://requests.readthedocs.io/en/latest/)
+- [`emoji`](https://pypi.org/project/emoji/)
 
 ## Usage
 
