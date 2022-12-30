@@ -48,6 +48,8 @@ Emoji that appear (for instance, in [certain](https://terrytao.wordpress.com/202
 
 ## Known Limitations or Issues
 
+- the more recent versions of $\rm pdf\LaTeX$ will cope with many unicode symbols but not all. In `string_formatter`, we escape only a few unicode characters to attempt to please the $\rm\TeX$ engine. For instance, we do not attempt to make greek characters work, which do appear on [some](https://terrytao.wordpress.com/2022/10/03/what-are-the-odds/#comment-658396) of the blog posts. $\rm{}pdf\LaTeX$ will complain, and $\rm{}Xe\LaTeX$ and $\rm{}Lua\LaTeX$ will work if you switch to a font that has the glyphs (without, these two will still compile.)
+
 - Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript.  This should be easy to adapt by using Selenium.
 
 - For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.

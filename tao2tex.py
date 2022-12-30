@@ -270,9 +270,14 @@ def string_formatter(text: str) -> str:
     whitespace_regex = re.compile("[" + unusual_whitespace + "]+")
     text = re.sub(whitespace_regex, " ", text)
     other_substitutions = str.maketrans(
-        {
-            "\uff0c": ",",  # U+FF0C is the "full-width comma". LaTeX doesn't like it
-            "\u3002": ".",  # U+3002 is the "ideographic full stop", e.g. in Chinese and Japanese.
+        {  # LaTeX doesn't like it and those below
+            "\uff0c": ",",  # U+FF0C = "full-width comma"             '，'.
+            "\u3002": ".",  # U+3002 = "ideographic full stop"        '。'.
+            "\uff1a": ":",  # U+FF1A = "full-width colon"             '：'.
+            "\uff1b": ";",  # U+FF1B = "full-width semicolon"         '；'.
+            "\uff08": "(",  # U+FF08 = "full-width opening bracket"   '（'.
+            "\uff09": ")",  # U+FF09 = "full-width closing bracket"   '）'.
+            "\uff01": "!",  # U+FF01 = "full-width exclamation point" '！'
             "\\": r"\textbackslash{}",
             r"^": r"\textasciicircum{}",
             "#": r"\#",
