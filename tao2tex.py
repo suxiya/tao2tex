@@ -693,7 +693,7 @@ def url2tex(
     local: bool,
     output: str,
     print_output: bool = False,
-    save_url: bool = False,
+    save_html: bool = False,
 ):
     "opens a url (or file) and creates a tex file with name given by output"
     raw_html = ""
@@ -770,7 +770,7 @@ def url2tex(
         output_file.write("".join(out))
     if print_output:
         print("".join(out))
-    if save_url:
+    if save_html:
         with open(output + ".html", "w", encoding="utf-8") as output_file:
             output_file.write("".join(out))
 
@@ -788,7 +788,9 @@ def main():
         "-l", "--local", help="treat url as a local file", action="store_true"
     )
     parser.add_argument("url", help="url of blog post to convert")
-    parser.add_argument("-o", "--output", help="name of output file")
+    parser.add_argument(
+        "-o", "--output", help="name of output file (without file extension)"
+    )
     parser.add_argument(
         "-p", "--print", help="print output to command line", action="store_true"
     )
@@ -797,7 +799,7 @@ def main():
     )
 
     parser.add_argument(
-        "--save-url", help="save the html to a .html file", action="store_true"
+        "--save-html", help="save the html to a .html file", action="store_true"
     )
 
     args = parser.parse_args()
@@ -814,7 +816,7 @@ def main():
                     numbered_name = args.output + str(i)
                 url2tex(filename.strip(), args.local, numbered_name)
     else:
-        url2tex(args.url, args.local, args.output, args.print, args.save_url)
+        url2tex(args.url, args.local, args.output, args.print, args.save_html)
 
 
 if __name__ == "__main__":
