@@ -270,7 +270,7 @@ def string_formatter(text: str) -> str:
     whitespace_regex = re.compile("[" + unusual_whitespace + "]+")
     text = re.sub(whitespace_regex, " ", text)
     other_substitutions = str.maketrans(
-        {  # LaTeX doesn't like it and those below
+        {  # LaTeX doesn't like these chars
             "\uff0c": ",",  # U+FF0C = "full-width comma"             '，'.
             "\u3002": ".",  # U+3002 = "ideographic full stop"        '。'.
             "\uff1a": ":",  # U+FF1A = "full-width colon"             '：'.
