@@ -688,7 +688,13 @@ def comment_processor(soup: BeautifulSoup) -> list[str]:
     )
 
 
-def url2tex(url: str, local: bool, output: str, print_output: bool = False):
+def url2tex(
+    url: str,
+    local: bool,
+    output: str,
+    print_output: bool = False,
+    save_url: bool = False,
+):
     "opens a url (or file) and creates a tex file with name given by output"
     raw_html = ""
     if local:
@@ -759,11 +765,15 @@ def url2tex(url: str, local: bool, output: str, print_output: bool = False):
         + [r"\end{document}"]
     )
     if not output:
-        output = blog_title + "-" + title + ".tex"
-    with open(output, "w", encoding="utf-8") as output_file:
+        output = blog_title + "-" + title
+    with open(output + ".tex", "w", encoding="utf-8") as output_file:
         output_file.write("".join(out))
     if print_output:
         print("".join(out))
+    if save_url:
+        with open(output + ".html", "w", encoding="utf-8") as output_file:
+            output_file.write("".join(out))
+
     logging.debug("the output is %i lines long.", len(out))
 
 
@@ -786,6 +796,10 @@ def main():
         "-d", "--debug", help="Log debug statements", action="store_true"
     )
 
+    parser.add_argument(
+        "--save-url", help="save the html to a .html file", action="store_true"
+    )
+
     args = parser.parse_args()
 
     if args.debug:
@@ -800,7 +814,7 @@ def main():
                     numbered_name = args.output + str(i)
                 url2tex(filename.strip(), args.local, numbered_name)
     else:
-        url2tex(args.url, args.local, args.output, args.print)
+        url2tex(args.url, args.local, args.output, args.print, args.save_url)
 
 
 if __name__ == "__main__":
