@@ -19,8 +19,7 @@ import argparse
 import datetime
 import logging
 import os
-import re
-from xmlrpc.client import Boolean  # https://regexkit.com/python-regex
+import re  # https://regexkit.com/python-regex
 
 import emoji
 import requests
