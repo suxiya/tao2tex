@@ -19,7 +19,8 @@ import argparse
 import datetime
 import logging
 import os
-import re  # https://regexkit.com/python-regex
+import re
+from xmlrpc.client import Boolean  # https://regexkit.com/python-regex
 
 import emoji
 import requests
@@ -129,9 +130,10 @@ def placeholder_formatter(width: str, height: str):
     return image_formatter("example-image", width, height)
 
 
-def ahref_formatter(href: str, text: str = "") -> str:
+def ahref_formatter(href: str, text: str = "", use_raw_text: bool = False) -> str:
     """turns a href with only text into the corresponding LaTeX code.
     If no text is given, then the href is used as text."""
+    text_formatter = (lambda t: t) if use_raw_text else string_formatter
     url_matcher = re.compile(r"(http|www).*")  # http or www, followed by anything
     ref_matcher = re.compile(r"[0-9]+")  # at least one number
     # at least one number in round brackets
@@ -139,8 +141,8 @@ def ahref_formatter(href: str, text: str = "") -> str:
 
     if url_matcher.match(href):
         if text == "":
-            text = href
-        return r"\href{" + string_formatter(href) + "}{" + string_formatter(text) + "}"
+            text = string_formatter(href)
+        return r"\href{" + string_formatter(href) + "}{" + text_formatter(text) + "}"
     elif href[0] == "#" and ref_matcher.match(text):
         return macro("ref", string_formatter(href[1:]))
     elif href[0] == "#" and eqref_matcher.match(text):
@@ -155,7 +157,7 @@ def ahref_wrapper(href: str, soup: BeautifulSoup) -> list[str]:
     # special case for images
     if len(soup.contents) == 1 and soup.contents[0].name == "img":
         return environment_formatter("center", ahref_formatter(href, "".join(soup_out)))
-    return [ahref_formatter(href, "".join(soup_out))]
+    return [ahref_formatter(href, "".join(soup_out), use_raw_text=True)]
 
 
 def em_wrapper(soup: BeautifulSoup) -> list[str]:
