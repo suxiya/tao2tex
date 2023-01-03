@@ -368,8 +368,7 @@ def table_wrapper(soup: BeautifulSoup):
             table_length = max(table_length, len(row))
             out.append("&".join(row))
             out.append(r"\\")
-
-    column_width = 0.9 / table_length
+    column_width = 0.9 / table_length if table_length > 0 else 0.9
     column_format = "p{" + str(column_width) + "\\linewidth} "
     beginning_string = (
         macro("begin", "tabular") + "{" + column_format * table_length + "}"
@@ -423,14 +422,15 @@ def child_processor(child: PageElement) -> list[str]:
             child.contents[0].name == "img"
             and "alt" in child.contents[0].attrs.keys()
             and "class" in child.contents[0].attrs.keys()
-            and child.contents[0]["class"] == ["latex"]
+            and "latex" in child.contents[0]["class"]
         ):
             return [display_math_formatter(child.contents[0]["alt"] + extra_string)]
         if (
-            child.contents[0].name == "a"
+            len(child.contents) >= 2
+            and child.contents[0].name == "a"
             and child.contents[1].name == "img"
             and "class" in child.contents[1].attrs.keys()
-            and child.contents[1]["class"] == ["latex"]
+            and "latex" in child.contents[1]["class"]
         ):
             # this may break if the case handling <a name="..."> below is changed.
             # specifically, we place the <a name="..."> at the beginning of the p tag.
@@ -439,7 +439,19 @@ def child_processor(child: PageElement) -> list[str]:
                     child.contents[1]["alt"], child.contents[0]["name"]
                 )
             ]
-
+        elif (
+            len(child.contents) >= 1
+            and child.contents[0].name == "a"
+            and len(child.contents[0].contents) >= 1
+            and child.contents[0].contents[0].name == "img"
+            and "class" in child.contents[0].contents[0].attrs.keys()
+            and "latex" in child.contents[0].contents[0]["class"]
+        ):
+            return [
+                labelled_math_formatter(
+                    child.contents[0].contents[0]["alt"], child.contents[0]["name"]
+                )
+            ]
         elif child.contents[0].name == "b":
             return [section_formatter(child.contents[0].get_text())]
         else:
@@ -448,6 +460,11 @@ def child_processor(child: PageElement) -> list[str]:
                 'fallback to basic processing in p align="..." tag\n child=%s',
                 str(child),
             )
+            # print(f"{len(child.contents)=}", f"{child.contents=}")
+            for gchild in child:
+                print(
+                    f"{gchild.name}"
+                )  # to fix: entire labelled display math is in an a tag.
             return soup_processor(child)
     elif (
         child.name == "img"
