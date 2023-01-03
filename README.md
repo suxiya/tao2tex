@@ -15,7 +15,7 @@ You need reasonably up-to-date installations of Python 3 and $\rm\LaTeX$ ([softw
 - [`requests`](https://requests.readthedocs.io/en/latest/)
 - [`emoji`](https://pypi.org/project/emoji/)
 
-You could also use a cloud service like [Overleaf](https://www.overleaf.com/) in lieu of a $\TeX$ installation.
+You could also use a cloud service like [Overleaf](https://www.overleaf.com/) in lieu of a $\rm\TeX$ installation.
 
 ## Usage
 
