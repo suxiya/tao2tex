@@ -399,7 +399,7 @@ def child_processor(child: PageElement) -> list[str]:
         return em_wrapper(child)
 
     elif child.name == "br":
-        return ["\n"]
+        return ["\n\n"]
 
     elif child.name == "table":
         return table_wrapper(child)
@@ -524,7 +524,7 @@ def child_processor(child: PageElement) -> list[str]:
             unprocessed_thm_name = ""
         return theorem_wrapper(unprocessed_thm_name, child)
     elif child.name == "p":
-        return soup_processor(child) + ["\n"]
+        return soup_processor(child) + ["\n\n"]
     elif child.name == "ul":
         return ul_wrapper(child)
     elif child.name == "ol":
@@ -620,7 +620,7 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
         else:
             comments.extend(comments_section_processor1(child))
 
-    return [comments_title] + comments + [macro("end", "itemize")]
+    return [comments_title] + comments + [macro("end", "itemize") + "\n"]
 
 
 def comments_section_processor1(child: BeautifulSoup, depth: int = 0) -> list[str]:
@@ -639,7 +639,7 @@ def comments_section_processor1(child: BeautifulSoup, depth: int = 0) -> list[st
         for gchild in child.children:
             comments.extend(comments_section_processor1(gchild, depth + 1))
         if depth < 3:
-            comments.append(macro("end", "itemize"))
+            comments.append(macro("end", "itemize") + "\n")
     return comments
 
 
@@ -759,7 +759,7 @@ def url2tex(
         comments = comment_soup.find(attrs={"id": "commentslist"})
 
     out = (
-        [preamble, r"\begin{document}", r"\maketitle{}"]
+        [preamble, "\n", r"\begin{document}", "\n", r"\maketitle{}", "\n"]
         + soup_processor(content)
         + comments_section_processor(comments)
         + [r"\end{document}"]

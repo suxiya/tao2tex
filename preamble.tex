@@ -1,8 +1,9 @@
 \documentclass[11pt]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{amsthm}
+
 \usepackage{enumitem}
-\setlist{leftmargin= 1em, labelsep=0.5em}
+\setlist{leftmargin= 1.3em, labelsep=0.5em} % adjust spacing for lists
 %%% below are simple theorems that use amsthm only
 %	\newtheorem{theorem}{Theorem}
 %	\newtheorem{corollary}[theorem]{Corollary}
@@ -31,17 +32,16 @@
 	\newmdtheoremenv[style=tao]{remark}[theorem]{Remark}
 	\newtheorem{note}[theorem]{Note}
 	\usepackage[margin=3cm]{geometry}
-\usepackage[normalem]{ulem}
+\usepackage[normalem]{ulem} % needed for strikethroughs
 \usepackage{graphicx}
 %%%%% If you find emoji in the blogpost (perhaps in the comments), 
 %%%%% then you can comment out the next line:
-\newcommand{\emoji}[1]{\texttt{#1}}
-%%%%% and instead use LuaTeX and the emoji package to properly print them:
+\newcommand{\emoji}[1]{\texttt{#1}} % and instead,
+%%%%% use LuaTeX and the emoji package to properly print them:
 % \usepackage{emoji}
-\usepackage{microtype}
+\usepackage{microtype} % better text formatting
 \usepackage{xcolor}
-\usepackage[TU]{fontenc}
-\usepackage[hyphens]{url}
+\usepackage[hyphens]{url} % allow linebreaks at hyphens
 \usepackage[colorlinks = true,
 			citecolor = blue,
 			urlcolor = blue,
