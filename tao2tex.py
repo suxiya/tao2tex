@@ -160,8 +160,10 @@ def ahref_wrapper(href: str, soup: BeautifulSoup) -> list[str]:
 
 
 def em_wrapper(soup: BeautifulSoup) -> list[str]:
-    """formats a soup inside an <em> tag with the emph LaTeX macro."""
-    return [macro("emph", "".join(soup_processor(soup)))]
+    """formats a soup inside an <em> tag with the emph LaTeX macro.
+    We turn double newlines into linebreaks since that works in emph"""
+    inner_text = "".join(soup_processor(soup)).replace("\n\n", r"\\")
+    return [macro("emph", inner_text)]
 
 
 def strong_wrapper(soup: BeautifulSoup) -> list[str]:
@@ -256,13 +258,14 @@ def label_formatter(label: str) -> str:
     return macro("label", label)
 
 
-def string_formatter(text: str) -> str:
+def string_formatter(text: str, no_greek=True) -> str:
     """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages).
     Hence this should not be called in math_formatter and related functions."""
     prefix = " " if text.startswith(" ") else ""
     postfix = " " if text.endswith(" ") else ""
     text = prefix + " ".join(text.split()) + postfix
     # there must be better syntax for the below...
+    # ...also I guess these should be somehow moved out of this function?
     unusual_whitespace = (
         "\u0009\u00A0\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
         + "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009"
@@ -273,30 +276,94 @@ def string_formatter(text: str) -> str:
     )
     whitespace_regex = re.compile("[" + unusual_whitespace + "]+")
     text = re.sub(whitespace_regex, " ", text)
-    other_substitutions = str.maketrans(
-        {  # LaTeX doesn't like these chars
-            "\uff0c": ",",  # U+FF0C = "full-width comma"             '，'.
-            "\u3002": ".",  # U+3002 = "ideographic full stop"        '。'.
-            "\uff1a": ":",  # U+FF1A = "full-width colon"             '：'.
-            "\uff1b": ";",  # U+FF1B = "full-width semicolon"         '；'.
-            "\uff08": "(",  # U+FF08 = "full-width opening bracket"   '（'.
-            "\uff09": ")",  # U+FF09 = "full-width closing bracket"   '）'.
-            "\uff01": "!",  # U+FF01 = "full-width exclamation point" '！'
-            "\\": r"\textbackslash{}",
-            r"^": r"\textasciicircum{}",
-            "#": r"\#",
-            "~": r"\textasciitilde{}",
-            "|": r"\textbar{}",
-            "$": r"\$",
-            "%": r"\%",
-            "&": r"\&",
-            "_": r"\_",
-            r"{": r"\{",
-            r"}": r"\}",
-        }
-    )
+    other_substitutions = {  # LaTeX doesn't like these chars
+        "\uff0c": ",",  # U+FF0C = "full-width comma"             '，'.
+        "\u3002": ".",  # U+3002 = "ideographic full stop"        '。'.
+        "\uff1a": ":",  # U+FF1A = "full-width colon"             '：'.
+        "\uff1b": ";",  # U+FF1B = "full-width semicolon"         '；'.
+        "\uff08": "(",  # U+FF08 = "full-width opening bracket"   '（'.
+        "\uff09": ")",  # U+FF09 = "full-width closing bracket"   '）'.
+        "\uff01": "!",  # U+FF01 = "full-width exclamation point" '！'
+        "\u2033": '"',  # U+2033 = "double prime"
+        "\\": r"\textbackslash{}",
+        r"^": r"\textasciicircum{}",
+        "#": r"\#",
+        "~": r"\textasciitilde{}",
+        "|": r"\textbar{}",
+        "$": r"\$",
+        "%": r"\%",
+        "&": r"\&",
+        "_": r"\_",
+        r"{": r"\{",
+        r"}": r"\}",
+        "∈": r"\(\in\)",
+    }
 
-    text = text.translate(other_substitutions)
+    greek_substitutions = {  # turn this off if you are using a font that has these symbols
+        # a manual selection from https://www.compart.com/en/unicode/charsets/ISO_8859-7:1987
+        "\u03B1": r"\(\alpha\)",
+        "\u03B2": r"\(\beta\)",
+        "\u03B3": r"\(\gamma\)",
+        "\u03B4": r"\(\delta\)",
+        "\u03B5": r"\(\epsilon\)",
+        "\u03B6": r"\(\zeta\)",
+        "\u03B7": r"\(\eta\)",
+        "\u03B8": r"\(\theta\)",
+        "\u03B9": r"\(\iota\)",
+        "\u03BA": r"\(\kappa\)",
+        "\u03BB": r"\(\lambda\)",
+        "\u03BC": r"\(\mu\)",
+        "\u03BD": r"\(\nu\)",
+        "\u03BE": r"\(\xi\)",
+        "\u03BF": r"\(o\)",
+        "\u03C0": r"\(\pi\)",
+        "\u03C1": r"\(\rho\)",
+        "\u03C2": r"\textvarsigma",
+        "\u03C3": r"\(\sigma\)",
+        "\u03C4": r"\(\tau\)",
+        "\u03C5": r"\(\upsilon\)",
+        "\u03C6": r"\(\varphi\)",
+        "ϕ": r"\(\phi\)",
+        "\u03C7": r"\(\chi\)",
+        "\u03C8": r"\(\psi\)",
+        "\u03C9": r"\(\omega\)",
+        # primed variants
+        "\u03AC": r"\(\overset'{\smash\alpha}\)",
+        "\u03AD": r"\(\overset'{\smash\epsilon}\)",
+        "\u03AE": r"\(\overset'{\smash\eta}\)",
+        "\u03AF": r"\(\overset'{\smash\iota}\)",
+        "\u03CC": r"\(\overset'{\smash o}\)",
+        "\u03CD": r"\(\overset'{\smash\upsilon}\)",
+        "\u03CE": r"\(\overset'{\smash\omega}\)",
+        # doubledot variants
+        "\u03CA": r"\(\ddot\iota\)",
+        "\u03CB": r"\(\ddot\upsilon\)",
+        # upper case
+        "\u0386": r"\'A",
+        "\u0388": r"\'E",
+        "\u0389": r"\'H",
+        "\u038A": r"\'I",
+        "\u038C": r"\'O",
+        "\u038E": r"\'Y",
+        "\u0393": r"\(\Gamma\)",
+        "\u0394": r"\(\Delta\)",
+        "\u0398": r"\(\Theta\)",
+        "\u039B": r"\(\Lambda\)",
+        "\u039E": r"\(\Xi\)",
+        "\u03A0": r"\(\Pi\)",
+        "\u03A3": r"\(\Sigma\)",
+        "\u03A6": r"\(\Phi\)",
+        "\u03A8": r"\(\Psi\)",
+        "\u03A9": r"\(\Omega\)",
+        "\u038F": r"\(\overset'{\smash\Omega}\)",
+        "\u03AA": r"\(\ddot I\)",
+        "\u03AB": r"\(\ddot Y\)",
+    }
+    if no_greek:
+        trans_table = str.maketrans(other_substitutions)
+    else:
+        trans_table = str.maketrans({**other_substitutions, **greek_substitutions})
+    text = text.translate(trans_table)
 
     # finally we need to use the emoji module to convert emojis
     # into something that LaTeX can handle. We put them into an \emoji macro;
@@ -352,11 +419,12 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
 
 def table_wrapper(soup: BeautifulSoup):
     """Formats a table using the tabular environment"""
+    if len(soup.contents) == 1 and soup.contents[0].name == "tbody":
+        return table_wrapper(soup.contents[0])
     out = []
     table_length = 0
     for child in soup.children:
         if child.name == "tr" or child.name == "th":
-
             row = []
             for gchild in child.children:
                 if (
