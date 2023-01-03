@@ -8,12 +8,14 @@ Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s
 
 ## Requirements and Installation
 
-You need reasonably up-to-date installations of Python 3 and $\rm\LaTeX$ (to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
+You need reasonably up-to-date installations of Python 3 and $\rm\LaTeX$ ([software](https://www.latex-project.org/get/) to compile the output of `tao2tex.py`). In addition, we also require the following to be installed (e.g. via pip)
 
 - [`lxml`](https://lxml.de/)
 - `bs4` ([Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))
 - [`requests`](https://requests.readthedocs.io/en/latest/)
 - [`emoji`](https://pypi.org/project/emoji/)
+
+You could also use a cloud service like [Overleaf](https://www.overleaf.com/) in lieu of a $\TeX$ installation.
 
 ## Usage
 
@@ -23,9 +25,9 @@ You need reasonably up-to-date installations of Python 3 and $\rm\LaTeX$ (to com
  3. Copy the URL.
  4. `cd` to the repo and run `python3 tao2tex.py URL`.
  5. Wait a few seconds and a `.tex` file will be produced.
- 6. Run the `.tex` file in your favourite $\rm\LaTeX$ program to create a finished PDF.
+ 6. Run the `.tex` file in your favourite $\rm\LaTeX$ workflow to create a finished PDF.
 
-For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/`.
+For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/`. 
 
 tao2tex also supports a local mode, and a batch mode:
 
