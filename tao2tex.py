@@ -142,9 +142,9 @@ def ahref_formatter(href: str, text: str = "", use_raw_text: bool = False) -> st
         if text == "":
             text = string_formatter(href)
         return r"\href{" + string_formatter(href) + "}{" + text_formatter(text) + "}"
-    elif href[0] == "#" and ref_matcher.match(text):
+    elif len(href) > 0 and href[0] == "#" and ref_matcher.match(text):
         return macro("ref", string_formatter(href[1:]))
-    elif href[0] == "#" and eqref_matcher.match(text):
+    elif len(href) > 0 and href[0] == "#" and eqref_matcher.match(text):
         return macro("eqref", string_formatter(href[1:]))
     else:
         return string_formatter(href)
