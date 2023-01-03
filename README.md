@@ -4,7 +4,7 @@
 
 ## Description
 
-Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s blog](https://terrytao.wordpress.com)) using a combination of regexes and BeautifulSoup, and spits out a $\rm\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) At the moment, this will work perfectly only for Tao's newer blogposts, but usable output is generated for the older blogposts as well.
+Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s blog](https://terrytao.wordpress.com)) using a combination of regexes and BeautifulSoup, and spits out a $\rm\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) This should work well for many of Tao's blog posts, and errors should be few and easy to fix.
 
 ## Requirements and Installation
 
@@ -27,7 +27,7 @@ You could also use a cloud service like [Overleaf](https://www.overleaf.com/) in
  5. Wait a few seconds and a `.tex` file will be produced.
  6. Run the `.tex` file in your favourite $\rm\LaTeX$ workflow to create a finished PDF.
 
-For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/`. 
+For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/) url, we should type `python3 tao2tex.py https://terrytao.wordpress.com/2018/12/09/254a-supplemental-weak-solutions-from-the-perspective-of-nonstandard-analysis-optional/`.
 
 tao2tex also supports a local mode, and a batch mode:
 

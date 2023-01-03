@@ -23,13 +23,8 @@ import re  # https://regexkit.com/python-regex
 
 import emoji
 import requests
-from bs4 import (
-    BeautifulSoup,
-    FeatureNotFound,
-    NavigableString,
-    PageElement,
-    SoupStrainer,
-)
+from bs4 import (BeautifulSoup, FeatureNotFound, NavigableString, PageElement,
+                 SoupStrainer)
 
 TIMEOUT_IN_SECONDS = 60
 ASSUMED_DPI = 100
@@ -421,6 +416,8 @@ def table_wrapper(soup: BeautifulSoup):
     """Formats a table using the tabular environment"""
     if len(soup.contents) == 1 and soup.contents[0].name == "tbody":
         return table_wrapper(soup.contents[0])
+    elif len(soup.contents) == 2 and soup.contents[0].name == "thead":
+        return table_wrapper(soup.contents[0] + soup.contents[1])
     out = []
     table_length = 0
     for child in soup.children:
