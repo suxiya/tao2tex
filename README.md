@@ -58,6 +58,8 @@ Emoji that appear (for instance, in [certain](https://terrytao.wordpress.com/202
 
 - For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
 
+- In some posts, e.g. [this one](https://terrytao.wordpress.com/2020/04/13/247b-notes-2-decoupling-theory/#comments), there are so many comments that we should actually check multiple pages. We do not currently do this.
+
 - It is possible though unlikely that two different images of the same name are downloaded from two different posts. To avoid this, run `tao2tex.py` in different folders.
 
 - Most likely, modification of the `BeautifulSoup` part is needed to work with other blogs, even those that are on Wordpress. Despite looking quite similar, the precise way that the tags are laid out seem to differ from blog to blog.

@@ -23,8 +23,13 @@ import re  # https://regexkit.com/python-regex
 
 import emoji
 import requests
-from bs4 import (BeautifulSoup, FeatureNotFound, NavigableString, PageElement,
-                 SoupStrainer)
+from bs4 import (
+    BeautifulSoup,
+    FeatureNotFound,
+    NavigableString,
+    PageElement,
+    SoupStrainer,
+)
 
 TIMEOUT_IN_SECONDS = 60
 ASSUMED_DPI = 100
@@ -185,10 +190,15 @@ def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> s
     """Formats labelled display math. On Tao's blogs,
     the equation number is hard-coded in. So we need to remove it"""
     extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
+    left_delim = r"\begin{" + env_type + "}" + label_formatter(label)
+    right_delim = r"\end{" + env_type + "}"
     if number_match := extra_eqno_matcher.match(text):
         text = number_match.group(1)
-        left_delim = r"\begin{" + env_type + "}" + label_formatter(label)
-        right_delim = r"\end{" + env_type + "}"
+    else:
+        logging.warning(
+            "did not find an equation number, potentially should not be numbered, text=%s",
+            text,
+        )
     return math_formatter(text, left_delim, right_delim)
 
 
@@ -584,6 +594,7 @@ def child_processor(child: PageElement) -> list[str]:
             and parent.name == "p"
             and "align" not in parent.attrs.keys()
             and parent.contents[-1] == child
+            and len(list(parent.next_siblings)) >= 2
             and (second_uncle := parent.next_sibling.next_sibling)
             and second_uncle.name == "p"
             and "align" in second_uncle.attrs.keys()
@@ -848,7 +859,15 @@ def url2tex(
         comments = comment_soup.find(attrs={"id": "commentslist"})
 
     out = (
-        [preamble, "\n", r"\begin{document}", "\n", r"\maketitle{}", "\n"]
+        [
+            preamble,
+            "\n",
+            r"\begin{document}",
+            r"\emergencystretch 3em % reduces text going into the right margins of theorems",
+            "\n",
+            r"\maketitle{}",
+            "\n",
+        ]
         + soup_processor(content)
         + comments_section_processor(comments)
         + [r"\end{document}"]
@@ -861,7 +880,7 @@ def url2tex(
         print("".join(out))
     if save_html:
         with open(output + ".html", "w", encoding="utf-8") as output_file:
-            output_file.write("".join(out))
+            output_file.write(raw_html)
 
     logging.debug("the output is %i lines long.", len(out))
 
