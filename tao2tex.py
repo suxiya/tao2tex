@@ -164,6 +164,11 @@ def em_wrapper(soup: BeautifulSoup) -> list[str]:
     return [macro("emph", "".join(soup_processor(soup)))]
 
 
+def strong_wrapper(soup: BeautifulSoup) -> list[str]:
+    """formats a soup inside an <em> tag with the emph LaTeX macro."""
+    return [macro("textbf", "".join(soup_processor(soup)))]
+
+
 def math_formatter(text: str, left_delim: str = r"\(", right_delim: str = r"\)") -> str:
     """adds math delimiters, hopefully around LaTeX formatted math text"""
     return left_delim + text + right_delim
@@ -539,6 +544,8 @@ def child_processor(child: PageElement) -> list[str]:
         return []
     elif child.name == "strike":
         return strike_wrapper(child)
+    elif child.name == "strong" or child.name == "b":
+        return strong_wrapper(child)
     elif child.name == "span" and len(child.contents) == 0:
         return []
     else:
