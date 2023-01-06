@@ -696,56 +696,54 @@ def preamble_formatter(
         return out
 
 
+def comments_section_title(comments_soup: BeautifulSoup) -> str:
+    """Pulls out the comments section's title"""
+    comments_title = "Comments"
+    if title_found := comments_soup.find(attrs={"class": "comments-title"}):
+        comments_title = macro(
+            "section*", string_formatter(title_found.get_text())
+        )
+    return comments_title
+
+
 def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
     """Converts the soup into a comments section,
     with a helper function comments_section_processor1 which deals with
     organizing the comments themselves.
 
     This helper calls comment_processor which formats a single comment."""
-    comments_title = " no title "
+
+    def comments_section_processor1(child: BeautifulSoup, depth: int = 0) -> list[str]:
+        """helper function to allow nested comments (i.e. replies) via recursion.
+        Actual formatting of comments is done in another helper, comment_processor"""
+        comments = []
+        if (
+            child.name == "div"
+            and "class" in child.attrs.keys()
+            and "comment" in child.attrs["class"]
+        ):
+            comments.append(comment_processor(child))
+        elif child.name == "ul":
+            if depth < 3:
+                comments.append(macro("begin", "itemize"))
+            for gchild in child.children:
+                comments.extend(comments_section_processor1(gchild, depth + 1))
+            if depth < 3:
+                comments.append(macro("end", "itemize") + "\n")
+        return comments
+
     comments = [macro("begin", "itemize")]
     for child in comments_soup.children:
-        # pull out section title and call comment_processor
         if (
             child.name == "div"
             and "id" in child.attrs.keys()
             and child["id"] == "comments-meta"
         ):
-            for gchild in child.children:
-                if isinstance(gchild, NavigableString):
-                    comments.append(string_formatter(str(gchild)))
-                elif (
-                    "class" in gchild.attrs.keys()
-                    and "comments-title" in gchild["class"]
-                ):
-                    comments_title = macro(
-                        "section*", string_formatter(gchild.get_text())
-                    )
-
+            continue
         else:
             comments.extend(comments_section_processor1(child))
 
-    return [comments_title] + comments + [macro("end", "itemize") + "\n"]
-
-
-def comments_section_processor1(child: BeautifulSoup, depth: int = 0) -> list[str]:
-    """helper function to allow nested comments (i.e. replies) via recursion.
-    Actual formatting of comments is done in another helper, comment_processor"""
-    comments = []
-    if (
-        child.name == "div"
-        and "class" in child.attrs.keys()
-        and "comment" in child.attrs["class"]
-    ):
-        comments.append(comment_processor(child))
-    elif child.name == "ul":
-        if depth < 3:
-            comments.append(macro("begin", "itemize"))
-        for gchild in child.children:
-            comments.extend(comments_section_processor1(gchild, depth + 1))
-        if depth < 3:
-            comments.append(macro("end", "itemize") + "\n")
-    return comments
+    return comments + [macro("end", "itemize") + "\n"]
 
 
 def comment_processor(soup: BeautifulSoup) -> list[str]:
@@ -792,6 +790,27 @@ def comment_processor(soup: BeautifulSoup) -> list[str]:
         + "".join(comment)
         + "\n"
     )
+
+
+def all_comments_processor(raw_html: str, comment_strainer: SoupStrainer) -> list[str]:
+    """
+    Helper function to allow recursively getting older comments from other pages.
+    Only used if the local flag is false.
+    """
+    comment_soup = html2soup(raw_html, comment_strainer)
+    comments = comment_soup.find(attrs={"id": "comments"})
+
+    processed_comments = comments_section_processor(comments)
+
+    # Look for an "older comments" link. If found, then we also need to process comments there.
+    for link in comment_soup.find_all('a'):
+        if "older comments" in link.get_text().lower():
+            logging.info("Processing older comments")
+            older_raw_html = requests.get(
+                link.get('href'), timeout=TIMEOUT_IN_SECONDS).text
+            processed_comments = all_comments_processor(
+                older_raw_html, comment_strainer) + processed_comments
+    return processed_comments
 
 
 def url2tex(
@@ -845,9 +864,16 @@ def url2tex(
 
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
     metadata = "".join(metadata)
-    
+
     comment_strainer = SoupStrainer("div", id="comments")
     comment_soup = html2soup(raw_html, comment_strainer)
+    comments_title = comments_section_title(comment_soup)
+    if local:
+        comments = comment_soup.find(attrs={"id": "comments"})
+        processed_comments = comments_section_processor(comments)
+    else:
+        processed_comments = all_comments_processor(raw_html, comment_strainer)
+
     preamble = preamble_formatter(
         template_filename="preamble.tex",
         blog_title=blog_title,
@@ -861,10 +887,6 @@ def url2tex(
     if not content:
         content = primary_soup.find(attrs={"class": "content"})
 
-    comments = comment_soup.find(attrs={"id": "comments"})
-    if not comments:
-        comments = comment_soup.find(attrs={"id": "commentslist"})
-
     out = (
         [
             preamble,
@@ -876,18 +898,21 @@ def url2tex(
             "\n",
         ]
         + soup_processor(content)
-        + comments_section_processor(comments)
+        + [comments_title]
+        + processed_comments
         + [r"\end{document}"]
     )
     if not output:
         output = blog_title + "-" + title
     with open(output + ".tex", "w", encoding="utf-8") as output_file:
         output_file.write("".join(out))
+        logging.info("saved output to %s", output + ".tex")
     if print_output:
         print("".join(out))
     if save_html:
         with open(output + ".html", "w", encoding="utf-8") as output_file:
             output_file.write(raw_html)
+            logging.info("saved html to %s", output + ".html")
 
     logging.debug("the output is %i lines long.", len(out))
 
