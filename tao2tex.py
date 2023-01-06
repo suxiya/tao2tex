@@ -732,6 +732,51 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
                 comments.append(macro("end", "itemize") + "\n")
         return comments
 
+    def comment_processor(soup: BeautifulSoup) -> list[str]:
+        """get for each comment: author name, date, and the comment string.
+        The first string in the output is the timestamp.
+        The second string is  the author name.
+        The remainder is the comment string.
+        """
+        timestamp = "unknown"
+        author = "unknown"
+        comment = []
+        for child in soup.children:
+            if isinstance(child, NavigableString):
+                continue
+            if "class" in child.attrs.keys() and "comment-metadata" in child.attrs["class"]:
+                for gchild in child.children:
+                    if isinstance(gchild, NavigableString):
+                        continue
+                    if (
+                        "class" in gchild.attrs.keys()
+                        and "comment-author" in gchild.attrs["class"]
+                    ):
+                        author = string_formatter(gchild.get_text())
+                    elif (
+                        "class" in gchild.attrs.keys()
+                        and "comment-permalink" in gchild.attrs["class"]
+                    ):
+                        timestamp = string_formatter(gchild.get_text())
+
+            elif (
+                "class" in child.attrs.keys(
+                ) and "comment-content" in child.attrs["class"]
+            ):
+                for gchild in child.children:
+                    if isinstance(gchild, NavigableString):
+                        continue
+                    if gchild.name == "img":
+                        continue  # Let's not process the avatars.
+                    comment += child_processor(gchild)
+        return (
+            macro("item", "")
+            + macro("textbf", author + macro("hfill", "") + timestamp)
+            + r"\\"
+            + "".join(comment)
+            + "\n"
+        )
+
     comments = [macro("begin", "itemize")]
     for child in comments_soup.children:
         if (
@@ -746,55 +791,10 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
     return comments + [macro("end", "itemize") + "\n"]
 
 
-def comment_processor(soup: BeautifulSoup) -> list[str]:
-    """get for each comment: author name, date, and the comment string.
-    The first string in the output is the timestamp.
-    The second string is  the author name.
-    The remainder is the comment string.
-    """
-    timestamp = "unknown"
-    author = "unknown"
-    comment = []
-    for child in soup.children:
-        if isinstance(child, NavigableString):
-            continue
-        if "class" in child.attrs.keys() and "comment-metadata" in child.attrs["class"]:
-            for gchild in child.children:
-                if isinstance(gchild, NavigableString):
-                    continue
-                if (
-                    "class" in gchild.attrs.keys()
-                    and "comment-author" in gchild.attrs["class"]
-                ):
-                    author = string_formatter(gchild.get_text())
-                elif (
-                    "class" in gchild.attrs.keys()
-                    and "comment-permalink" in gchild.attrs["class"]
-                ):
-                    timestamp = string_formatter(gchild.get_text())
-
-        elif (
-            "class" in child.attrs.keys(
-            ) and "comment-content" in child.attrs["class"]
-        ):
-            for gchild in child.children:
-                if isinstance(gchild, NavigableString):
-                    continue
-                if gchild.name == "img":
-                    continue  # Let's not process the avatars.
-                comment += child_processor(gchild)
-    return (
-        macro("item", "")
-        + macro("textbf", author + macro("hfill", "") + timestamp)
-        + r"\\"
-        + "".join(comment)
-        + "\n"
-    )
-
-
 def all_comments_processor(raw_html: str, comment_strainer: SoupStrainer) -> list[str]:
     """
-    Helper function to allow recursively getting older comments from other pages.
+    A wrapper around comments_section_processor to allow recursively getting older comments
+    from other pages.
     Only used if the local flag is false.
     """
     comment_soup = html2soup(raw_html, comment_strainer)
