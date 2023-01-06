@@ -1,8 +1,6 @@
 # tao2tex
 
-## Video Demo
-
-<https://youtu.be/-3nFLI_w1ao>
+Examples: https://www.youtube.com/watch?v=32iDQdDVA2Q
 
 ## Description
 
