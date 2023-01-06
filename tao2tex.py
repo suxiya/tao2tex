@@ -133,7 +133,8 @@ def ahref_formatter(href: str, text: str = "", use_raw_text: bool = False) -> st
     """turns a href with only text into the corresponding LaTeX code.
     If no text is given, then the href is used as text."""
     text_formatter = (lambda t: t) if use_raw_text else string_formatter
-    url_matcher = re.compile(r"(http|www).*")  # http or www, followed by anything
+    # http or www, followed by anything
+    url_matcher = re.compile(r"(http|www).*")
     ref_matcher = re.compile(r"[0-9]+")  # at least one number
     # at least one number in round brackets
     eqref_matcher = re.compile(r"\([0-9]+\)")
@@ -189,7 +190,8 @@ def display_math_formatter(
 def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> str:
     """Formats labelled display math. On Tao's blogs,
     the equation number is hard-coded in. So we need to remove it"""
-    extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
+    extra_eqno_matcher = re.compile(
+        r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
     left_delim = r"\begin{" + env_type + "}" + label_formatter(label)
     right_delim = r"\end{" + env_type + "}"
     if number_match := extra_eqno_matcher.match(text):
@@ -367,7 +369,8 @@ def string_formatter(text: str, no_greek=True) -> str:
     if no_greek:
         trans_table = str.maketrans(other_substitutions)
     else:
-        trans_table = str.maketrans({**other_substitutions, **greek_substitutions})
+        trans_table = str.maketrans(
+            {**other_substitutions, **greek_substitutions})
     text = text.translate(trans_table)
 
     # finally we need to use the emoji module to convert emojis
@@ -405,7 +408,8 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
         and isinstance(first_child, NavigableString)
     ):
         first_child = str(first_child.extract())
-        bullet_matcher = re.compile(r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*-]")
+        bullet_matcher = re.compile(
+            r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*-]")
         #  see  https://regexkit.com/python-regex,
         # matches common bullet or numberings
         # eg: "1.", "(2)", "[3]", "4)", "(v)", "*", and "."
@@ -630,7 +634,8 @@ def child_processor(child: PageElement) -> list[str]:
     elif child.name == "li":
         return li_wrapper(child)
     elif child.name == "div" and (
-        ("class" in child.attrs.keys() and "sharedaddy" in child.attrs["class"][0])
+        ("class" in child.attrs.keys()
+         and "sharedaddy" in child.attrs["class"][0])
         or ("class" in child.attrs.keys() and "cs-rating" in child.attrs["class"])
         or ("id" in child.attrs.keys() and "jp-post-flair" in child.attrs["id"])
     ):
@@ -771,7 +776,8 @@ def comment_processor(soup: BeautifulSoup) -> list[str]:
                     timestamp = string_formatter(gchild.get_text())
 
         elif (
-            "class" in child.attrs.keys() and "comment-content" in child.attrs["class"]
+            "class" in child.attrs.keys(
+            ) and "comment-content" in child.attrs["class"]
         ):
             for gchild in child.children:
                 if isinstance(gchild, NavigableString):
@@ -819,7 +825,8 @@ def url2tex(
     else:
         # take the title from the <head> tag
         every_page_has_a_title = SoupStrainer("head")
-        blog_title = soup_processor(html2soup(raw_html, every_page_has_a_title))
+        blog_title = soup_processor(
+            html2soup(raw_html, every_page_has_a_title))
 
     tagline = "Blog Tagline Goes Here"
     if may_have_tagline := header_soup.find(id="tagline"):
@@ -838,7 +845,7 @@ def url2tex(
 
     metadata = soup_processor(primary_soup.find("p", "post-metadata"))
     metadata = "".join(metadata)
-
+    
     comment_strainer = SoupStrainer("div", id="comments")
     comment_soup = html2soup(raw_html, comment_strainer)
     preamble = preamble_formatter(
@@ -895,7 +902,9 @@ def main():
     parser.add_argument(
         "-l", "--local", help="treat url as a local file", action="store_true"
     )
-    parser.add_argument("url", help="url of blog post to convert")
+    parser.add_argument(
+        "url", help="url of blog post to convert"
+    )
     parser.add_argument(
         "-o", "--output", help="name of output file (without file extension)"
     )
@@ -905,11 +914,9 @@ def main():
     parser.add_argument(
         "-d", "--debug", help="Log debug statements", action="store_true"
     )
-
     parser.add_argument(
         "--save-html", help="save the html to a .html file", action="store_true"
     )
-
     args = parser.parse_args()
 
     if args.debug:
