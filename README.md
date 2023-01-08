@@ -6,7 +6,7 @@
 
 ## Description
 
-Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s blog](https://terrytao.wordpress.com)) using a combination of regexes and BeautifulSoup, and spits out a $\rm\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) This should work well for many of Tao's blog posts, and errors should be few and easy to fix.
+Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s blog](https://terrytao.wordpress.com)) using a combination of regexes and BeautifulSoup, and spits out a $\rm\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) This should work well for many of Tao's blog posts, and issues with the generated `.tex` should be few and easy to fix.
 
 ## Requirements and Installation
 
@@ -56,13 +56,11 @@ Emoji that appear (for instance, in [certain](https://terrytao.wordpress.com/202
 
 - In `string_formatter`, we escape only a few unicode characters to attempt to please the $\rm\TeX$ engine. We replace greek characters, which do appear on [some](https://terrytao.wordpress.com/2022/10/03/what-are-the-odds/#comment-658396) of the blog posts, in an arguably naive and counterproductive manner (e.g. alpha into`\(\alpha\)`). $\rm{}pdf\LaTeX$ will complain, and $\rm{}Xe\LaTeX$ and $\rm{}Lua\LaTeX$ will work if you switch to a font that has the glyphs (without, these two will still compile.)
 
-- Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript. This should be easy to adapt by using Selenium.
-
-- For the same reason, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
+- Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript. For example, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
 
 - In some posts, e.g. [this one](https://terrytao.wordpress.com/2020/04/13/247b-notes-2-decoupling-theory/#comments), there are so many comments that we check multiple pages. We skip this when running in `-l`/`--local` mode.
 
-- It is possible though unlikely that two different images of the same name are downloaded from two different posts. To avoid this, run `tao2tex.py` in different folders.
+- The heuristics we use for labels are not perfect. However, we definitely include all labelled tags (formatted as `<a name="...">eq. number</a>`)
 
 - Most likely, modification of the `BeautifulSoup` part is needed to work with other blogs, even those that are on Wordpress. Despite looking quite similar, the precise way that the tags are laid out seem to differ from blog to blog.
 
