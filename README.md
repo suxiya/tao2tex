@@ -6,7 +6,7 @@ Examples: <https://www.youtube.com/watch?v=32iDQdDVA2Q>
 
 Goes through the HTML of a wordpress math blogpost (mainly, [Prof. Terry Tao’s blog](https://terrytao.wordpress.com)) using a combination of regexes and BeautifulSoup, and spits out a $\rm\LaTeX$ version. In some ways, a partial inverse for [LaTeX2WP](https://lucatrevisan.wordpress.com/latex-to-wordpress/using-latex2wp/). However, we also include the comments (which sometimes has great information.) This should work well for many of Tao's blog posts, and issues with the generated `.tex` should be few and easy to fix.
 
-**Note:** please observe Prof Tao's copyright notice and do not redistribute large numbers of Tao's blogposts:
+**Note:** please observe Prof Tao's copyright notice on [this page](https://terrytao.wordpress.com/about/) and do not redistribute large numbers of Tao's blogposts without asking him for permission:
 >Readers are welcome to copy, link to, quote from, or translate reasonable portions of the content of this blog (e.g. a single article) into other media, though for items longer than one or two paragraphs, I would appreciate it if a reference or citation to the URL that the content originates from is provided. If you wish to copy a significantly larger fraction of the content (e.g. an entire series of articles), please contact me about it first.
 
 ## Requirements and Installation
