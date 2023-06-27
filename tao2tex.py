@@ -917,6 +917,17 @@ def url2tex(
     logging.debug("the output is %i lines long.", len(out))
 
 
+def index(url: str = "https://terrytao.wordpress.com"):
+    raw_html = requests.get(url, timeout=TIMEOUT_IN_SECONDS).text
+    primary_strainer = SoupStrainer("div", id="primary")
+    primary_soup = html2soup(raw_html, primary_strainer)
+    for a in primary_soup.find_all("a"):
+        link = a.get("href")
+        if link and link.startswith("https://terrytao.wordpress.com/2") and link.endswith("/"):
+            print(a.get("href"))
+            # TODO: this takes links from the blurb as well. need to only search titles
+
+
 def main():
     """parses the command line arguments and passes them to url2tex"""
 
@@ -942,12 +953,19 @@ def main():
     parser.add_argument(
         "--save-html", help="save the html to a .html file", action="store_true"
     )
+
+    parser.add_argument(
+        "-i", "--index", help="check url for posts as a homepage", action="store_true"
+    )
+
     args = parser.parse_args()
 
     if args.debug:
         logging.basicConfig(filename="tao2tex_debug.log", level=logging.DEBUG)
 
-    if args.batch:
+    if args.index:
+        index(args.url)
+    elif args.batch:
         with open(args.url, "r", encoding="utf8") as file:
             list_of_filenames = file.readlines()
             for i, filename in enumerate(list_of_filenames):
