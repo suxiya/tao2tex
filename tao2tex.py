@@ -478,16 +478,16 @@ def child_processor(child: PageElement) -> list[str]:
     if isinstance(child, NavigableString):
         return [string_formatter(child.get_text())]
 
-    elif child.name == "em" or child.name == "i":
+    elif child.name == "em" or child.name == "i":  # <em>, <i>
         return em_wrapper(child)
 
-    elif child.name == "br":
+    elif child.name == "br":  # <br>
         return ["\n\n"]
 
-    elif child.name == "table":
+    elif child.name == "table":  # <table>
         return table_wrapper(child)
 
-    elif child.name == "p" and (
+    elif child.name == "p" and (  # <p align...> , <p style=text-align:center;...>
         "align" in child.attrs.keys()
         or ("style" in child.attrs.keys() and "text-align:center;" in child["style"])
     ):
@@ -498,6 +498,7 @@ def child_processor(child: PageElement) -> list[str]:
         if extra_string != "":
             extra_string = r"\qquad" + extra_string
         if (
+            # inside p, <img class="latex" alt="...">
             child.contents[0].name == "img"
             and "alt" in child.contents[0].attrs.keys()
             and "class" in child.contents[0].attrs.keys()
@@ -505,6 +506,7 @@ def child_processor(child: PageElement) -> list[str]:
         ):
             return [display_math_formatter(child.contents[0]["alt"] + extra_string)]
         if (
+            #  inside p, <a name="..."></a> <img class="latex" alt="..."></img>
             len(child.contents) >= 2
             and child.contents[0].name == "a"
             and child.contents[1].name == "img"
@@ -519,6 +521,7 @@ def child_processor(child: PageElement) -> list[str]:
                 )
             ]
         elif (
+            #  inside p, <a name="..."><img class="latex" alt="..."></img></a>
             len(child.contents) >= 1
             and child.contents[0].name == "a"
             and len(child.contents[0].contents) >= 1
@@ -531,7 +534,7 @@ def child_processor(child: PageElement) -> list[str]:
                     child.contents[0].contents[0]["alt"], child.contents[0]["name"]
                 )
             ]
-        elif child.contents[0].name == "b":
+        elif child.contents[0].name == "b":  # inside p, <b> text </b>
             return [section_formatter(child.contents[0].get_text())]
         else:
             # fallback processing.
@@ -546,13 +549,14 @@ def child_processor(child: PageElement) -> list[str]:
                 )  # to fix: entire labelled display math is in an a tag.
             return soup_processor(child)
     elif (
+        # <img class="latex" alt="..."></img>, not inside a p
         child.name == "img"
         and "alt" in child.attrs.keys()
         and "class" in child.attrs.keys()
         and child["class"] == ["latex"]
     ):
         return [math_formatter(child["alt"])]
-    elif child.name == "img":
+    elif child.name == "img":  # <img>, class is not latex
         if "src" in child.attrs.keys():
             src = child["src"]
             width = ""
@@ -568,7 +572,7 @@ def child_processor(child: PageElement) -> list[str]:
         logging.warning("img tag with no src attr: child=%s", str(child))
         return []
 
-    elif child.name == "a" and "href" in child.attrs.keys():
+    elif child.name == "a" and "href" in child.attrs.keys():  # <a href="..."> ... </a>
         for grandchild in child.children:
             if not isinstance(grandchild, NavigableString) and not isinstance(
                 grandchild, str
@@ -576,6 +580,7 @@ def child_processor(child: PageElement) -> list[str]:
                 return ahref_wrapper(child["href"], child)
         return [ahref_formatter(child["href"], child.get_text())]
     elif child.name == "a" and "name" in child.attrs.keys():
+        # <a href="...", name = "..."> ... </a>
         # In LaTeX, labels need to appear inside of the environment it labels.
         # We move this into the heuristically determined correct environment and defer processing
         # this until processing <p align="..."> tags.
@@ -588,12 +593,15 @@ def child_processor(child: PageElement) -> list[str]:
                 ):
                     continue
                 if gchild.name == "p" and gchild.contents[0].name == "img":
+                    # inside <a name="...">, <p> <img> </img> </p>
                     return [
                         labelled_math_formatter(
                             gchild.contents[0]["alt"], child["name"]
                         )
                     ]
         elif (
+            # <p parent without align> ..... last_child = child </p>
+            # <first uncle> <p as 2nd uncle, and has align>
             (parent := child.parent)
             and parent.name == "p"
             and "align" not in parent.attrs.keys()
@@ -603,13 +611,14 @@ def child_processor(child: PageElement) -> list[str]:
             and second_uncle.name == "p"
             and "align" in second_uncle.attrs.keys()
         ):
-            # make second_uncle adopt child
+            # make second_uncle adopt child (which is an <a name="...">)
             second_uncle.insert(0, child)
             # we skip formatting now, as it will be formatted when
             # we reach the second_uncle in the outermost for loop.
             return []
+        # pray fallback works
         return [label_formatter(child.attrs["name"])]
-    elif child.name == "blockquote":
+    elif child.name == "blockquote":  # <blockquote> </blockquote>
         if child.b:
             unprocessed_thm_name = (
                 child.b.extract().get_text()
@@ -625,13 +634,13 @@ def child_processor(child: PageElement) -> list[str]:
             )
             unprocessed_thm_name = ""
         return theorem_wrapper(unprocessed_thm_name, child)
-    elif child.name == "p":
+    elif child.name == "p":  # <p> tag that is not matched by above can be removed
         return soup_processor(child) + ["\n\n"]
-    elif child.name == "ul":
+    elif child.name == "ul":  # <ul>
         return ul_wrapper(child)
-    elif child.name == "ol":
+    elif child.name == "ol":  # <ol>
         return ol_wrapper(child)
-    elif child.name == "li":
+    elif child.name == "li":  # <li>
         return li_wrapper(child)
     elif child.name == "div" and (
         ("class" in child.attrs.keys()
@@ -640,11 +649,11 @@ def child_processor(child: PageElement) -> list[str]:
         or ("id" in child.attrs.keys() and "jp-post-flair" in child.attrs["id"])
     ):
         return []
-    elif child.name == "strike":
+    elif child.name == "strike":  # <strike>
         return strike_wrapper(child)
-    elif child.name == "strong" or child.name == "b":
+    elif child.name == "strong" or child.name == "b":  # <strong>, <b>
         return strong_wrapper(child)
-    elif child.name == "span" and len(child.contents) == 0:
+    elif child.name == "span" and len(child.contents) == 0:  # <span>
         return []
     else:
         # fallback to get_text
