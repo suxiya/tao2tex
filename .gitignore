@@ -13,4 +13,6 @@ html_prettyprinter.py
 *.gz
 *.out
 *.latexmk
+*.fdb_latexmk
+*.fls
 .pdm-python
