@@ -35,7 +35,7 @@ For instance if we copied [this](https://terrytao.wordpress.com/2018/12/09/254a-
 tao2tex also supports a local mode, and a batch mode:
 
 - For local mode, save the html of the page and then use the name of the file in place of the url, with the option `-l`. e.g. `python3 tao2tex.py file.html -l`
-- For batch mode, save the list of urls in a file, e.g. batch.txt and call `python3 tao2tex.py batch.txt -b`. If you have a list of local files, you can use `-b -l`.
+- For batch mode, save the list of urls in a file, e.g. batch.txt and call `python3 tao2tex.py batch.txt -b`. If you have a list of local files, you can use `-b -l`, e.g. the provided `tested.txt` file. Everything after the first whitespace in each line is ignored, so you can leave comments after a space.
 
 In addition, you can specify the name of the .tex file with the `-o` option, the `-p` option prints the output to the command-line, and `-d` enables a rudimentary debugger. If you do not have a specific post in mind, you can run `python3 tao2tex.py -i https://terrytao.wordpress.com` to get a list of blog posts on Prof Tao's front page.
 
