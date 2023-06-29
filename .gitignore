@@ -12,4 +12,5 @@ html_prettyprinter.py
 *.log
 *.gz
 *.out
+*.latexmk
 .pdm-python
