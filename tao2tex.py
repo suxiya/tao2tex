@@ -33,6 +33,7 @@ from bs4 import (
 
 TIMEOUT_IN_SECONDS = 60
 ASSUMED_DPI = 100
+FILENAME_MAXLEN = 40
 
 
 def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
@@ -67,7 +68,6 @@ def download_file(url: str) -> str:
     except requests.exceptions.ConnectionError:
         logging.warning("failed to download from url=%s", url)
         return ""
-
     with open(filename, "wb") as file:
         file.write(raw_data.content)
         return filename
@@ -138,7 +138,7 @@ def ahref_formatter(href: str, text: str = "", use_raw_text: bool = False) -> st
     ref_matcher = re.compile(r"[0-9]+")  # at least one number
     # at least one number in round brackets
     eqref_matcher = re.compile(r"\([0-9]+\)")
-
+    text = text.replace("\n", " ")  # newlines in refs are bad
     if url_matcher.match(href):
         if text == "":
             text = string_formatter(href)
@@ -268,13 +268,11 @@ def label_formatter(label: str) -> str:
 def string_formatter(text: str, no_greek=True) -> str:
     """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages).
     Hence this should not be called in math_formatter and related functions."""
-    prefix = " " if text.startswith(" ") else ""
-    postfix = " " if text.endswith(" ") else ""
-    text = prefix + " ".join(text.split()) + postfix
+
     # there must be better syntax for the below...
     # ...also I guess these should be somehow moved out of this function?
     unusual_whitespace = (
-        "\u0009\u00A0\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
+        "\u0009\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
         + "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009"
         + "\u200A\u200B\u200C\u200D\u200E\u200F\u202F"
         + "\u205F\u2060\u2061\u2062\u2063\u2064\u206A\u206b\u206c"
@@ -304,6 +302,12 @@ def string_formatter(text: str, no_greek=True) -> str:
         r"{": r"\{",
         r"}": r"\}",
         "∈": r"\(\in\)",
+        "<": r"\(<\)",
+        ">": r"\(>\)",
+        "≥": r"\(\ge\)",
+        "≤": r"\(\le\)",
+        "\xa0": "~",  # nbsp non-breaking space
+        "\u00A0": "~"
     }
 
     greek_substitutions = {  # turn this off if you are using a font that has these symbols
@@ -383,8 +387,10 @@ def string_formatter(text: str, no_greek=True) -> str:
             "emoji", data_dict["en"].strip(":").replace("_", "-")
         ),
     )
-
-    return text
+    # split to use python's matching of whitespace in case I missed any
+    prefix = " " if text.startswith(" ") else ""
+    postfix = " " if text.endswith(" ") else ""
+    return prefix + " ".join(text.split()) + postfix
 
 
 def ol_wrapper(soup: BeautifulSoup) -> list[str]:
@@ -912,7 +918,8 @@ def url2tex(
         + [r"\end{document}"]
     )
     if not output:
-        output = blog_title + "-" + title
+        output = (blog_title + "-" +
+                  title[:FILENAME_MAXLEN]).replace("'", "").replace("\\", "").replace(".", "").replace("~", "")
     with open(output + ".tex", "w", encoding="utf-8") as output_file:
         output_file.write("".join(out))
         logging.info("saved output to %s", output + ".tex")
@@ -981,7 +988,9 @@ def main():
                 numbered_name = None
                 if args.output:
                     numbered_name = args.output + str(i)
-                url2tex(filename.strip(), args.local, numbered_name)
+                filename = filename.strip()
+                if filename:
+                    url2tex(filename.split()[0], args.local, numbered_name)
     else:
         url2tex(args.url, args.local, args.output, args.print, args.save_html)
 
