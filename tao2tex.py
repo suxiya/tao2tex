@@ -42,14 +42,16 @@ def html2soup(user_html: str, strainer: SoupStrainer) -> BeautifulSoup:
         soup = BeautifulSoup(user_html, "lxml", parse_only=strainer)
     except FeatureNotFound:
         logging.warning(
-            "You should install the lxml parser: pip install lxml\n Trying with default parser"
+            "You should install the lxml parser: pip install lxml\n \
+                    Trying with default parser"
         )
         soup = BeautifulSoup(user_html, parse_only=strainer)
     return soup
 
 
 def download_file(url: str) -> str:
-    """downloads a file at url; returns saved filename if successful, else an empty string"""
+    """downloads a file at url; returns saved filename if successful,
+    else an empty string"""
     url_simplifier = re.compile(r"(.*?)\?")
     if can_be_simplified := url_simplifier.search(url):
         url = can_be_simplified.group(1)
@@ -190,15 +192,15 @@ def display_math_formatter(
 def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> str:
     """Formats labelled display math. On Tao's blogs,
     the equation number is hard-coded in. So we need to remove it"""
-    extra_eqno_matcher = re.compile(
-        r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
+    extra_eqno_matcher = re.compile(r"(?:\\displaystyle)?(.*?)(?:\\ )+\([0-9]+\)")
     left_delim = r"\begin{" + env_type + "}" + label_formatter(label)
     right_delim = r"\end{" + env_type + "}"
     if number_match := extra_eqno_matcher.match(text):
         text = number_match.group(1)
     else:
         logging.warning(
-            "did not find an equation number, potentially should not be numbered, text=%s",
+            "did not find an equation number, potentially should not be numbered,"
+            "text=%s",
             text,
         )
     return math_formatter(text, left_delim, right_delim)
@@ -206,7 +208,8 @@ def labelled_math_formatter(text: str, label: str, env_type: str = "align") -> s
 
 def section_formatter(text: str) -> str:
     """formats a section header using the section LaTeX macro.
-    implementations are probably highly different across blogs so we just hardcode Tao's in:
+    implementations are probably highly different across blogs,
+    so we just hardcode Tao's in:
     this means we search for and remove leading numbers."""
     section_matcher = re.compile(r"[a-zA-Z,]+")
     if section_match := section_matcher.findall(text):
@@ -266,18 +269,19 @@ def label_formatter(label: str) -> str:
 
 
 def string_formatter(text: str, no_greek=True) -> str:
-    """Escapes special LaTeX characters and unusual whitespaces (sorry foreign languages).
+    """Escapes special LaTeX characters and unusual whitespaces
+    (sorry foreign languages)
     Hence this should not be called in math_formatter and related functions."""
 
     # there must be better syntax for the below...
     # ...also I guess these should be somehow moved out of this function?
     unusual_whitespace = (
         "\u0009\u00AD\u034F\u061c\u115f\u1160\u17b4\u17b5\u180e"
-        + "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009"
-        + "\u200A\u200B\u200C\u200D\u200E\u200F\u202F"
-        + "\u205F\u2060\u2061\u2062\u2063\u2064\u206A\u206b\u206c"
-        + "\u206d\u206e\u206f\u3000\u2800\u3164\ufeff\uffa0\U0001D159"
-        + "\U0001D173\U0001D174\U0001D175\U0001D176\U0001D177\U0001D178\U0001D179\U0001D17A"
+        "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009"
+        "\u200A\u200B\u200C\u200D\u200E\u200F\u202F"
+        "\u205F\u2060\u2061\u2062\u2063\u2064\u206A\u206b\u206c"
+        "\u206d\u206e\u206f\u3000\u2800\u3164\ufeff\uffa0\U0001D159"
+        "\U0001D173\U0001D174\U0001D175\U0001D176\U0001D177\U0001D178\U0001D179\U0001D17A"
     )
     whitespace_regex = re.compile("[" + unusual_whitespace + "]+")
     text = re.sub(whitespace_regex, " ", text)
@@ -306,11 +310,11 @@ def string_formatter(text: str, no_greek=True) -> str:
         ">": r"\(>\)",
         "≥": r"\(\ge\)",
         "≤": r"\(\le\)",
-        "\xa0": "~",  # nbsp non-breaking space
-        "\u00A0": "~"
+        "\xa0": "~",  # nbsp non-breaking space. equal to "\u00A0"
     }
 
-    greek_substitutions = {  # turn this off if you are using a font that has these symbols
+    greek_substitutions = {
+        # turn this off if you are using a font that has these symbols
         # a manual selection from https://www.compart.com/en/unicode/charsets/ISO_8859-7:1987
         "\u03B1": r"\(\alpha\)",
         "\u03B2": r"\(\beta\)",
@@ -373,8 +377,7 @@ def string_formatter(text: str, no_greek=True) -> str:
     if no_greek:
         trans_table = str.maketrans(other_substitutions)
     else:
-        trans_table = str.maketrans(
-            {**other_substitutions, **greek_substitutions})
+        trans_table = str.maketrans({**other_substitutions, **greek_substitutions})
     text = text.translate(trans_table)
 
     # finally we need to use the emoji module to convert emojis
@@ -383,7 +386,7 @@ def string_formatter(text: str, no_greek=True) -> str:
     #   or use the default definition of \emoji in preamble.tex.
     text = emoji.replace_emoji(
         text,
-        replace=lambda chars, data_dict: macro(
+        replace=lambda _, data_dict: macro(
             "emoji", data_dict["en"].strip(":").replace("_", "-")
         ),
     )
@@ -414,8 +417,7 @@ def li_wrapper(soup: BeautifulSoup, find_bullet: bool = True) -> list[str]:
         and isinstance(first_child, NavigableString)
     ):
         first_child = str(first_child.extract())
-        bullet_matcher = re.compile(
-            r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*-]")
+        bullet_matcher = re.compile(r"(?:[\(\[]?[0-9ivxIabcABC]?\w?\w[\)\]\:.])|[\*-]")
         #  see  https://regexkit.com/python-regex,
         # matches common bullet or numberings
         # eg: "1.", "(2)", "[3]", "4)", "(v)", "*", and "."
@@ -649,8 +651,7 @@ def child_processor(child: PageElement) -> list[str]:
     elif child.name == "li":  # <li>
         return li_wrapper(child)
     elif child.name == "div" and (
-        ("class" in child.attrs.keys()
-         and "sharedaddy" in child.attrs["class"][0])
+        ("class" in child.attrs.keys() and "sharedaddy" in child.attrs["class"][0])
         or ("class" in child.attrs.keys() and "cs-rating" in child.attrs["class"])
         or ("id" in child.attrs.keys() and "jp-post-flair" in child.attrs["id"])
     ):
@@ -715,9 +716,7 @@ def comments_section_title(comments_soup: BeautifulSoup) -> str:
     """Pulls out the comments section's title"""
     comments_title = "Comments"
     if title_found := comments_soup.find(attrs={"class": "comments-title"}):
-        comments_title = macro(
-            "section*", string_formatter(title_found.get_text())
-        )
+        comments_title = macro("section*", string_formatter(title_found.get_text()))
     return comments_title
 
 
@@ -759,7 +758,10 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
         for child in soup.children:
             if isinstance(child, NavigableString):
                 continue
-            if "class" in child.attrs.keys() and "comment-metadata" in child.attrs["class"]:
+            if (
+                "class" in child.attrs.keys()
+                and "comment-metadata" in child.attrs["class"]
+            ):
                 for gchild in child.children:
                     if isinstance(gchild, NavigableString):
                         continue
@@ -775,8 +777,8 @@ def comments_section_processor(comments_soup: BeautifulSoup) -> list[str]:
                         timestamp = string_formatter(gchild.get_text())
 
             elif (
-                "class" in child.attrs.keys(
-                ) and "comment-content" in child.attrs["class"]
+                "class" in child.attrs.keys()
+                and "comment-content" in child.attrs["class"]
             ):
                 for gchild in child.children:
                     if isinstance(gchild, NavigableString):
@@ -818,13 +820,16 @@ def all_comments_processor(raw_html: str, comment_strainer: SoupStrainer) -> lis
     processed_comments = comments_section_processor(comments)
 
     # Look for an "older comments" link. If found, then we also need to process comments there.
-    for link in comment_soup.find_all('a'):
+    for link in comment_soup.find_all("a"):
         if "older comments" in link.get_text().lower():
             logging.info("Processing older comments")
             older_raw_html = requests.get(
-                link.get('href'), timeout=TIMEOUT_IN_SECONDS).text
-            processed_comments = all_comments_processor(
-                older_raw_html, comment_strainer) + processed_comments
+                link.get("href"), timeout=TIMEOUT_IN_SECONDS
+            ).text
+            processed_comments = (
+                all_comments_processor(older_raw_html, comment_strainer)
+                + processed_comments
+            )
     return processed_comments
 
 
@@ -859,8 +864,7 @@ def url2tex(
     else:
         # take the title from the <head> tag
         every_page_has_a_title = SoupStrainer("head")
-        blog_title = soup_processor(
-            html2soup(raw_html, every_page_has_a_title))
+        blog_title = soup_processor(html2soup(raw_html, every_page_has_a_title))
 
     tagline = "Blog Tagline Goes Here"
     if may_have_tagline := header_soup.find(id="tagline"):
@@ -907,7 +911,7 @@ def url2tex(
             preamble,
             "\n",
             r"\begin{document}",
-            r"\emergencystretch 3em % reduces text going into the right margins of theorems",
+            r"\emergencystretch 3em % prevents going past right margins of theorems",
             "\n",
             r"\maketitle{}",
             "\n",
@@ -918,8 +922,13 @@ def url2tex(
         + [r"\end{document}"]
     )
     if not output:
-        output = (blog_title + "-" +
-                  title[:FILENAME_MAXLEN]).replace("'", "").replace("\\", "").replace(".", "").replace("~", "")
+        output = (
+            (blog_title + "-" + title[:FILENAME_MAXLEN])
+            .replace("'", "")
+            .replace("\\", "")
+            .replace(".", "")
+            .replace("~", "")
+        )
     with open(output + ".tex", "w", encoding="utf-8") as output_file:
         output_file.write("".join(out))
         logging.info("saved output to %s", output + ".tex")
@@ -939,7 +948,11 @@ def index(url: str = "https://terrytao.wordpress.com"):
     primary_soup = html2soup(raw_html, primary_strainer)
     for a in primary_soup.find_all("a"):
         link = a.get("href")
-        if link and link.startswith("https://terrytao.wordpress.com/2") and link.endswith("/"):
+        if (
+            link
+            and link.startswith("https://terrytao.wordpress.com/2")
+            and link.endswith("/")
+        ):
             print(a.get("href"))
             # TODO: this takes links from the blurb as well. need to only search titles
 
@@ -954,9 +967,7 @@ def main():
     parser.add_argument(
         "-l", "--local", help="treat url as a local file", action="store_true"
     )
-    parser.add_argument(
-        "url", help="url of blog post to convert"
-    )
+    parser.add_argument("url", help="url of blog post to convert")
     parser.add_argument(
         "-o", "--output", help="name of output file (without file extension)"
     )

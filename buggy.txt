@@ -2,3 +2,4 @@ https://terrytao.wordpress.com/2018/12/24/elias-stein/ 2023-06-29 09:14 picture 
 https://terrytao.wordpress.com/2023/06/27/sumsets-and-entropy-revisited/ 2023-06-29 10:48 math in theorem title not rendered
 https://terrytao.wordpress.com/2022/11/29/a-counterexample-to-the-periodic-tiling-conjecture-2/ embedded youtube video is ignored. probably include a link instead
 https://terrytao.wordpress.com/2022/12/18/special-relativity-and-middle-earth/ pictures slightly too large
+https://terrytao.wordpress.com/2010/03/05/254a-notes-7-the-least-singular-value/ theorems remarks etc should be separately numbered in these notes
