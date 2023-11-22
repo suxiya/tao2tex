@@ -8,7 +8,7 @@ authors = [
 ]
 dependencies = [
     "beautifulsoup4==4.11.1",
-    "emoji==2.2.0",
+    "emoji>=2.8.0",
     "lxml==4.9.1",
     "requests==2.31.0",
 ]
