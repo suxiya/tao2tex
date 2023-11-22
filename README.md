@@ -55,13 +55,15 @@ Emoji that appear (for instance, in [certain](https://terrytao.wordpress.com/202
 
 - the more recent versions (since 2018) of $\rm pdf\LaTeX$ will cope with many unicode symbols (but not all) because [UTF8 is assumed to be the default input encoding](https://tex.stackexchange.com/questions/34604/entering-unicode-characters-in-latex). If you do not want to install a newer version, you can try using [Overleaf](https://www.overleaf.com/). You might be able to get away with adding `\usepackage[TU]{inputenc}` or `\usepackage[T1]{inputenc}` to the preamble...
 
+- Sometimes (In section names, theorem names, etc.) The mathematics is skipped. This should be easy to fix once I have time to look into this.
+
 - In `string_formatter`, we escape only a few unicode characters to attempt to please the $\rm\TeX$ engine. We replace greek characters, which do appear on [some](https://terrytao.wordpress.com/2022/10/03/what-are-the-odds/#comment-658396) of the blog posts, in an arguably naive and counterproductive manner (e.g. alpha into`\(\alpha\)`). $\rm{}pdf\LaTeX$ will complain, and $\rm{}Xe\LaTeX$ and $\rm{}Lua\LaTeX$ will work if you switch to a font that has the glyphs (without, these two will still compile.)
 
 - Since we pull website data using the `requests` module, we do not see any HTML generated from Javascript. For example, we are unable to process the occasional polls that Tao makes. However, the rest of the post should work as expected.
 
 - In some posts, e.g. [this one](https://terrytao.wordpress.com/2020/04/13/247b-notes-2-decoupling-theory/#comments), there are so many comments that we check multiple pages. We skip this when running in `-l`/`--local` mode.
 
-- The heuristics we use for labels are not perfect. However, we definitely include all labelled tags (formatted as `<a name="...">eq. number</a>`)
+- The heuristics we use for labels are not perfect. However, we definitely include all labelled tags (formatted as `<a name="...">eq. number</a>`). Most issues seem to be easy to regex away after running tao2tex; for example, I had success replacing `end{align}\\label{[a-z-]*}` with `end{align}` globally.
 
 - Most likely, modification of the `BeautifulSoup` part is needed to work with other blogs, even those that are on Wordpress. Despite looking quite similar, the precise way that the tags are laid out seem to differ from blog to blog.
 
